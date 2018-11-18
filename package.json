@@ -1,5 +1,5 @@
 {
-  "name": "reinterpreter",
+  "name": "esinterpret",
   "license": "MIT",
   "devDependencies": {
     "@babel/parser": "^7.1.6",

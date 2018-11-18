@@ -1,5 +1,5 @@
 import { Value } from './Value';
-import { Realm } from '../Realm';
+import { Realm } from '../environment/Realm';
 
 export class NumberValue extends Value {
   value: number;

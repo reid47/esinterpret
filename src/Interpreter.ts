@@ -1,5 +1,5 @@
 import * as JS from '@babel/types';
-import { Realm } from './Realm';
+import { Realm } from './environment/Realm';
 
 export class Interpreter {
   realm: Realm;
