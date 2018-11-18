@@ -1,5 +1,3 @@
-import { StringValue } from '../values/StringValue';
-import { SymbolValue } from '../values/SymbolValue';
 import { ObjectValue } from '../values/ObjectValue';
 import { PropertyKeyValue } from '../types';
 import { assert } from '../assert';

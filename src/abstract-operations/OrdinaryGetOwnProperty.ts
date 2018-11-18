@@ -1,8 +1,8 @@
 import { ObjectValue } from '../values/ObjectValue';
-import { StringValue } from '../values/StringValue';
-import { SymbolValue } from '../values/SymbolValue';
 import { assert } from '../assert';
 import { IsPropertyKey } from './IsPropertyKey';
+import { IsDataDescriptor } from './IsDataDescriptor';
+import { IsAccessorDescriptor } from './IsAccessorDescriptor';
 import { PropertyKeyValue } from '../types';
 import { PropertyDescriptor } from '../values/PropertyDescriptor';
 
@@ -14,7 +14,17 @@ export function OrdinaryGetOwnProperty(obj: ObjectValue, propertyKey: PropertyKe
   if (!propertyBinding) return undefined;
 
   const descriptor = new PropertyDescriptor();
-  // TODO: rest of this
+
+  if (IsDataDescriptor(propertyBinding)) {
+    descriptor.__Value = propertyBinding.__Value;
+    descriptor.__Writable = propertyBinding.__Writable;
+  } else if (IsAccessorDescriptor(propertyBinding)) {
+    descriptor.__Get = propertyBinding.__Get;
+    descriptor.__Set = propertyBinding.__Set;
+  }
+
+  descriptor.__Enumerable = propertyBinding.__Enumerable;
+  descriptor.__Configurable = propertyBinding.__Configurable;
 
   return descriptor;
 }

@@ -6,5 +6,6 @@ import { ObjectValue } from '../values/ObjectValue';
 export function IsRegExp(value: Value) {
   if (!(value instanceof ObjectValue)) return false;
 
+  const matcher = Get(value, '@@match');
   return true;
 }

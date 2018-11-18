@@ -5,7 +5,7 @@ import { ObjectValue } from '../values/ObjectValue';
 export function IsCallable(value: Value) {
   if (!(value instanceof ObjectValue)) return false;
 
-  if (value.hasOwnProperty('__Call')) return true;
+  if (value.__Call) return true;
 
   return false;
 }

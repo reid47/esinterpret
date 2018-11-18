@@ -16,32 +16,32 @@ export function FromPropertyDescriptor(realm: Realm, desc: PropertyDescriptor) {
     'Object should not have any properties or symbols'
   );
 
-  if (desc.hasOwnProperty('__Value')) {
+  if (desc.__Value) {
     const created = CreateDataProperty(realm, obj, 'value', desc.__Value);
     assert(created, 'Could not create value property');
   }
 
-  if (desc.hasOwnProperty('__Writable')) {
+  if (desc.__Writable) {
     const created = CreateDataProperty(realm, obj, 'writable', desc.__Writable);
     assert(created, 'Could not create writable property');
   }
 
-  if (desc.hasOwnProperty('__Get')) {
+  if (desc.__Get) {
     const created = CreateDataProperty(realm, obj, 'get', desc.__Get);
     assert(created, 'Could not create get property');
   }
 
-  if (desc.hasOwnProperty('__Set')) {
+  if (desc.__Set) {
     const created = CreateDataProperty(realm, obj, 'set', desc.__Set);
     assert(created, 'Could not create set property');
   }
 
-  if (desc.hasOwnProperty('__Enumerable')) {
+  if (desc.__Enumerable) {
     const created = CreateDataProperty(realm, obj, 'enumerable', desc.__Enumerable);
     assert(created, 'Could not create enumerable property');
   }
 
-  if (desc.hasOwnProperty('__Configurable')) {
+  if (desc.__Configurable) {
     const created = CreateDataProperty(realm, obj, 'configurable', desc.__Configurable);
     assert(created, 'Could not create configurable property');
   }

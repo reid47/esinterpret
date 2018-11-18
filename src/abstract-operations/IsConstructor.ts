@@ -5,7 +5,7 @@ import { ObjectValue } from '../values/ObjectValue';
 export function IsConstructor(value: Value) {
   if (!(value instanceof ObjectValue)) return false;
 
-  if (value.hasOwnProperty('__Construct')) return true;
+  if (value.__Construct) return true;
 
   return false;
 }

@@ -7,10 +7,16 @@ import { OrdinaryIsExtensible } from '../abstract-operations/OrdinaryIsExtensibl
 import { Realm } from '../environment/Realm';
 import { OrdinaryPreventExtensions } from '../abstract-operations/OrdinaryPreventExtensions';
 import { OrdinaryGetOwnProperty } from '../abstract-operations/OrdinaryGetOwnProperty';
+import { OrdinaryDefineOwnProperty } from '../abstract-operations/OrdinaryDefineOwnProperty';
 import { StringValue } from './StringValue';
 import { SymbolValue } from './SymbolValue';
 import { PropertyKeyValue } from '../types';
 import { assert } from '../assert';
+import { PropertyDescriptor } from './PropertyDescriptor';
+import { OrdinaryHasProperty } from '../abstract-operations/OrdinaryHasProperty';
+import { OrdinaryGet } from '../abstract-operations/OrdinaryGet';
+import { OrdinarySet } from '../abstract-operations/OrdinarySet';
+import { OrdinaryDelete } from '../abstract-operations/OrdinaryDelete';
 
 export class ObjectValue extends Value {
   __Prototype: ObjectValue | NullValue;
@@ -46,8 +52,38 @@ export class ObjectValue extends Value {
   }
 
   // ECMA-262 9.1.5
-  __GetOwnProperty(propertyKey: StringValue | SymbolValue) {
+  __GetOwnProperty(propertyKey: PropertyKeyValue) {
     return OrdinaryGetOwnProperty(this, propertyKey);
+  }
+
+  // ECMA-262 9.1.6
+  __DefineOwnProperty(propertyKey: PropertyKeyValue, desc: PropertyDescriptor) {
+    return OrdinaryDefineOwnProperty(this.__Realm, this, propertyKey, desc);
+  }
+
+  // ECMA-262 9.1.7
+  __HasProperty(propertyKey: PropertyKeyValue) {
+    return OrdinaryHasProperty(this.__Realm, this, propertyKey);
+  }
+
+  // ECMA-262 9.1.8
+  __Get(propertyKey: PropertyKeyValue, receiver: ObjectValue) {
+    return OrdinaryGet(this, propertyKey, receiver);
+  }
+
+  // ECMA-262 9.1.9
+  __Set(propertyKey: PropertyKeyValue, value: Value, receiver: ObjectValue) {
+    return OrdinarySet(this.__Realm, this, propertyKey, value, receiver);
+  }
+
+  // ECMA-262 9.1.10
+  __Delete(propertyKey: PropertyKeyValue) {
+    return OrdinaryDelete(this, propertyKey);
+  }
+
+  // ECMA-262 9.1.11
+  __OwnPropertyKeys() {
+    return OrdinaryOwnPropertyKeys(this);
   }
 
   __InternalGetPropertyBinding(propertyKey: PropertyKeyValue) {
@@ -64,5 +100,37 @@ export class ObjectValue extends Value {
     }
 
     assert(false, 'Could not get property binding');
+  }
+
+  __InternalSetPropertyBinding(propertyKey: PropertyKeyValue, desc: PropertyDescriptor) {
+    if (typeof propertyKey === 'string') {
+      return this.properties.set(propertyKey, desc);
+    }
+
+    if (propertyKey instanceof StringValue) {
+      return this.properties.set(propertyKey.value, desc);
+    }
+
+    if (propertyKey instanceof SymbolValue) {
+      return this.symbols.set(propertyKey, desc);
+    }
+
+    assert(false, 'Could not set property binding');
+  }
+
+  __InternalDeletePropertyBinding(propertyKey: PropertyKeyValue) {
+    if (typeof propertyKey === 'string') {
+      return this.properties.delete(propertyKey);
+    }
+
+    if (propertyKey instanceof StringValue) {
+      return this.properties.delete(propertyKey.value);
+    }
+
+    if (propertyKey instanceof SymbolValue) {
+      return this.symbols.delete(propertyKey);
+    }
+
+    assert(false, 'Could not delete property binding');
   }
 }
