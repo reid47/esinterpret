@@ -6,4 +6,8 @@ export abstract class Value {
   constructor(realm: Realm) {
     this.__Realm = realm;
   }
+
+  getType() {
+    return this.constructor;
+  }
 }

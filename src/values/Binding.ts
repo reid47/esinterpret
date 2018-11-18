@@ -1,4 +1,4 @@
-import { Value } from '../values/Value';
+import { Value } from './Value';
 
 export class Binding {
   name: string;
