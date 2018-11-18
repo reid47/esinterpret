@@ -1,11 +1,14 @@
 import { Interpreter } from '../src/Interpreter';
+import { parse } from '@babel/parser';
 
-let int;
-
-beforeEach(() => {
-  int = new Interpreter();
-});
+const interpret = code => {
+  const ast = parse(code);
+  return new Interpreter({ ast });
+};
 
 test('works', () => {
-  expect(int.interpret()).toBeTruthy();
+  const int = interpret('47');
+  // const int = interpret('2 + 2');
+
+  expect(int.lastExpressionValue()).toBe(47);
 });
