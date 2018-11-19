@@ -1,7 +1,7 @@
-import { Value } from '../values/Value';
-import { ObjectValue } from '../values/ObjectValue';
-import { ArrayExotic } from '../values/ArrayExotic';
-import { ProxyValue } from '../values/ProxyValue';
+import { Value } from '../../values/Value';
+import { ObjectValue } from '../../values/ObjectValue';
+import { ArrayExotic } from '../../values/ArrayExotic';
+import { ProxyValue } from '../../values/ProxyValue';
 
 // ECMA-262 7.2.2
 export function IsArray(value: Value) {

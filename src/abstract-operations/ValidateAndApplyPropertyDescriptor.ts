@@ -4,11 +4,11 @@ import { BooleanValue } from '../values/BooleanValue';
 import { PropertyDescriptor } from '../values/PropertyDescriptor';
 import { UndefinedValue } from '../values/UndefinedValue';
 import { assert } from '../assert';
-import { IsPropertyKey } from './IsPropertyKey';
+import { IsPropertyKey } from './comparison/IsPropertyKey';
 import { IsGenericDescriptor } from './IsGenericDescriptor';
 import { IsDataDescriptor } from './IsDataDescriptor';
 import { Realm } from '../environment/Realm';
-import { SameValue } from './SameValue';
+import { SameValue } from './comparison/SameValue';
 
 // ECMA-262 9.1.6.3
 export function ValidateAndApplyPropertyDescriptor(

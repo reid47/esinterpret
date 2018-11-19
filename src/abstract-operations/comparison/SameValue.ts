@@ -1,5 +1,5 @@
-import { Value } from '../values/Value';
-import { NumberValue } from '../values/NumberValue';
+import { Value } from '../../values/Value';
+import { NumberValue } from '../../values/NumberValue';
 import { SameValueNonNumber } from './SameValueNonNumber';
 
 // ECMA-262 7.2.10

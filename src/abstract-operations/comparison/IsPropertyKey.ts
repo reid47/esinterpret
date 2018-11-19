@@ -1,5 +1,5 @@
-import { StringValue } from '../values/StringValue';
-import { SymbolValue } from '../values/SymbolValue';
+import { StringValue } from '../../values/StringValue';
+import { SymbolValue } from '../../values/SymbolValue';
 
 // ECMA-262 7.2.7
 export function IsPropertyKey(arg: any) {

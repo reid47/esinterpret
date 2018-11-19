@@ -2,7 +2,7 @@ import { ObjectValue } from '../values/ObjectValue';
 import { assert } from '../assert';
 import { PropertyKeyValue } from '../types';
 import { Value } from '../values/Value';
-import { IsPropertyKey } from './IsPropertyKey';
+import { IsPropertyKey } from './comparison/IsPropertyKey';
 import { OrdinarySetWithOwnDescriptor } from './OrdinarySetWithOwnDescriptor';
 import { Realm } from '../environment/Realm';
 

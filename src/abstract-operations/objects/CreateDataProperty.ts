@@ -1,11 +1,11 @@
-import { ObjectValue } from '../values/ObjectValue';
-import { PropertyKeyValue } from '../types';
-import { Value } from '../values/Value';
-import { assert } from '../assert';
-import { IsPropertyKey } from './IsPropertyKey';
-import { PropertyDescriptor } from '../values/PropertyDescriptor';
-import { Realm } from '../environment/Realm';
-import { BooleanValue } from '../values/BooleanValue';
+import { ObjectValue } from '../../values/ObjectValue';
+import { PropertyKeyValue } from '../../types';
+import { Value } from '../../values/Value';
+import { assert } from '../../assert';
+import { IsPropertyKey } from '../comparison/IsPropertyKey';
+import { PropertyDescriptor } from '../../values/PropertyDescriptor';
+import { Realm } from '../../environment/Realm';
+import { BooleanValue } from '../../values/BooleanValue';
 
 // ECMA-262 7.3.4
 export function CreateDataProperty(

@@ -2,16 +2,16 @@ import { ObjectValue } from '../values/ObjectValue';
 import { assert } from '../assert';
 import { PropertyKeyValue } from '../types';
 import { Value } from '../values/Value';
-import { IsPropertyKey } from './IsPropertyKey';
+import { IsPropertyKey } from './comparison/IsPropertyKey';
 import { NullValue } from '../values/NullValue';
 import { IsDataDescriptor } from './IsDataDescriptor';
 import { IsAccessorDescriptor } from './IsAccessorDescriptor';
-import { Call } from './Call';
+import { Call } from './objects/Call';
 import { PropertyDescriptor } from '../values/PropertyDescriptor';
 import { UndefinedValue } from '../values/UndefinedValue';
 import { Realm } from '../environment/Realm';
 import { BooleanValue } from '../values/BooleanValue';
-import { CreateDataProperty } from './CreateDataProperty';
+import { CreateDataProperty } from './objects/CreateDataProperty';
 
 // ECMA-262 9.1.9.2
 export function OrdinarySetWithOwnDescriptor(

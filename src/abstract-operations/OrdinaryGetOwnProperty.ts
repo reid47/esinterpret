@@ -1,6 +1,6 @@
 import { ObjectValue } from '../values/ObjectValue';
 import { assert } from '../assert';
-import { IsPropertyKey } from './IsPropertyKey';
+import { IsPropertyKey } from './comparison/IsPropertyKey';
 import { IsDataDescriptor } from './IsDataDescriptor';
 import { IsAccessorDescriptor } from './IsAccessorDescriptor';
 import { PropertyKeyValue } from '../types';

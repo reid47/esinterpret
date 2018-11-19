@@ -1,5 +1,5 @@
-import { NumberValue } from '../values/NumberValue';
-import { Value } from '../values/Value';
+import { NumberValue } from '../../values/NumberValue';
+import { Value } from '../../values/Value';
 
 // ECMA-262 7.2.6
 export function IsInteger(value: Value) {

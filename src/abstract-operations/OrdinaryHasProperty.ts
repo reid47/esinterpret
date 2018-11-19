@@ -2,7 +2,7 @@ import { Realm } from '../environment/Realm';
 import { ObjectValue } from '../values/ObjectValue';
 import { PropertyKeyValue } from '../types';
 import { assert } from '../assert';
-import { IsPropertyKey } from './IsPropertyKey';
+import { IsPropertyKey } from './comparison/IsPropertyKey';
 import { NullValue } from '../values/NullValue';
 
 // ECMA-262 9.1.7.1

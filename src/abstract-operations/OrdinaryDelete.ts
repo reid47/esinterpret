@@ -1,7 +1,7 @@
 import { ObjectValue } from '../values/ObjectValue';
 import { assert } from '../assert';
 import { PropertyKeyValue } from '../types';
-import { IsPropertyKey } from './IsPropertyKey';
+import { IsPropertyKey } from './comparison/IsPropertyKey';
 
 // ECMA-262 9.1.10.1
 export function OrdinaryDelete(obj: ObjectValue, propertyKey: PropertyKeyValue) {

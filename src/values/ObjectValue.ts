@@ -17,12 +17,26 @@ import { OrdinaryHasProperty } from '../abstract-operations/OrdinaryHasProperty'
 import { OrdinaryGet } from '../abstract-operations/OrdinaryGet';
 import { OrdinarySet } from '../abstract-operations/OrdinarySet';
 import { OrdinaryDelete } from '../abstract-operations/OrdinaryDelete';
+import { NumberValue } from './NumberValue';
 
 export class ObjectValue extends Value {
   __Prototype: ObjectValue | NullValue;
   __Extensible: BooleanValue;
-  properties: Map<string | StringValue, any>;
+
+  properties: Map<StringValue, any>;
   symbols: Map<SymbolValue, any>;
+
+  // Set when creating an object from a boolean (e.g. ECMA-262 7.1.13)
+  __BooleanData?: BooleanValue;
+
+  // Set when creating an object from a number (e.g. ECMA-262 7.1.13)
+  __NumberData?: NumberValue;
+
+  // Set when creating an object from a string (e.g. ECMA-262 7.1.13)
+  __StringData?: StringValue;
+
+  // Set when creating an object from a symbol (e.g. ECMA-262 7.1.13)
+  __SymbolData?: SymbolValue;
 
   constructor(realm: Realm, proto?: ObjectValue | NullValue) {
     super(realm);
@@ -82,17 +96,13 @@ export class ObjectValue extends Value {
   }
 
   // ECMA-262 9.1.11
-  __OwnPropertyKeys() {
+  __OwnPropertyKeys(): PropertyKeyValue[] {
     return OrdinaryOwnPropertyKeys(this);
   }
 
   __InternalGetPropertyBinding(propertyKey: PropertyKeyValue) {
-    if (typeof propertyKey === 'string') {
-      return this.properties.get(propertyKey);
-    }
-
     if (propertyKey instanceof StringValue) {
-      return this.properties.get(propertyKey.value);
+      return this.properties.get(propertyKey);
     }
 
     if (propertyKey instanceof SymbolValue) {
@@ -103,12 +113,8 @@ export class ObjectValue extends Value {
   }
 
   __InternalSetPropertyBinding(propertyKey: PropertyKeyValue, desc: PropertyDescriptor) {
-    if (typeof propertyKey === 'string') {
-      return this.properties.set(propertyKey, desc);
-    }
-
     if (propertyKey instanceof StringValue) {
-      return this.properties.set(propertyKey.value, desc);
+      return this.properties.set(propertyKey, desc);
     }
 
     if (propertyKey instanceof SymbolValue) {
@@ -119,12 +125,8 @@ export class ObjectValue extends Value {
   }
 
   __InternalDeletePropertyBinding(propertyKey: PropertyKeyValue) {
-    if (typeof propertyKey === 'string') {
-      return this.properties.delete(propertyKey);
-    }
-
     if (propertyKey instanceof StringValue) {
-      return this.properties.delete(propertyKey.value);
+      return this.properties.delete(propertyKey);
     }
 
     if (propertyKey instanceof SymbolValue) {

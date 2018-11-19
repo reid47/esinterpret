@@ -1,5 +1,5 @@
-import { ObjectValue } from '../values/ObjectValue';
-import { assert } from '../assert';
+import { ObjectValue } from '../../values/ObjectValue';
+import { assert } from '../../assert';
 
 // ECMA-262 7.2.5
 export function IsExtensible(obj: ObjectValue) {

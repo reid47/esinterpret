@@ -1,8 +1,4 @@
 import { ObjectValue } from '../values/ObjectValue';
-import { StringValue } from '../values/StringValue';
-import { SymbolValue } from '../values/SymbolValue';
-import { assert } from '../assert';
-import { IsPropertyKey } from './IsPropertyKey';
 import { PropertyKeyValue } from '../types';
 import { PropertyDescriptor } from '../values/PropertyDescriptor';
 import { ValidateAndApplyPropertyDescriptor } from './ValidateAndApplyPropertyDescriptor';

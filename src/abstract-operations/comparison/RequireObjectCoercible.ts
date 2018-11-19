@@ -1,6 +1,6 @@
-import { Value } from '../values/Value';
-import { UndefinedValue } from '../values/UndefinedValue';
-import { NullValue } from '../values/NullValue';
+import { Value } from '../../values/Value';
+import { UndefinedValue } from '../../values/UndefinedValue';
+import { NullValue } from '../../values/NullValue';
 
 // ECMA-262 7.2.1
 export function RequireObjectCoercible(value: Value) {

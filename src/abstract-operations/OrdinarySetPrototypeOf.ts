@@ -2,7 +2,7 @@ import { ObjectValue } from '../values/ObjectValue';
 import { assert } from '../assert';
 import { Value } from '../values/Value';
 import { NullValue } from '../values/NullValue';
-import { SameValue } from './SameValue';
+import { SameValue } from './comparison/SameValue';
 
 // ECMA-262 9.1.2.1
 export function OrdinarySetPrototypeOf(obj: ObjectValue, newProto: Value) {

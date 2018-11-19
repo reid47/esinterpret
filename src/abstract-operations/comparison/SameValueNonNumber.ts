@@ -1,11 +1,11 @@
-import { Value } from '../values/Value';
-import { NumberValue } from '../values/NumberValue';
-import { assert } from '../assert';
-import { UndefinedValue } from '../values/UndefinedValue';
-import { NullValue } from '../values/NullValue';
-import { StringValue } from '../values/StringValue';
-import { BooleanValue } from '../values/BooleanValue';
-import { SymbolValue } from '../values/SymbolValue';
+import { Value } from '../../values/Value';
+import { NumberValue } from '../../values/NumberValue';
+import { assert } from '../../assert';
+import { UndefinedValue } from '../../values/UndefinedValue';
+import { NullValue } from '../../values/NullValue';
+import { StringValue } from '../../values/StringValue';
+import { BooleanValue } from '../../values/BooleanValue';
+import { SymbolValue } from '../../values/SymbolValue';
 
 // ECMA-262 7.2.12
 export function SameValueNonNumber(x: Value, y: Value) {
