@@ -3,17 +3,24 @@
   "license": "MIT",
   "dependencies": {
     "@babel/parser": "^7.1.6",
-    "@babel/types": "^7.1.6"
+    "@babel/types": "^7.1.6",
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
     "jest": "^23.6.0",
     "madge": "^3.3.0",
+    "rollup": "^0.67.3",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-filesize": "^5.0.1",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-terser": "^3.0.0",
+    "rollup-plugin-typescript": "^1.0.0",
     "ts-jest": "^23.10.4",
     "typescript": "^3.1.6"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rollup -c rollup.config.js",
     "test": "jest",
     "circular": "madge --circular --extensions js ./dist",
     "circular-ts": "madge --circular --extensions ts ./src"
