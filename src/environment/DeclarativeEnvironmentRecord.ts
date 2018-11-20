@@ -1,8 +1,9 @@
 import { EnvironmentRecord } from './EnvironmentRecord';
 import { Realm } from './Realm';
 import { assert } from '../assert';
-import { Binding } from './Binding';
+import { Binding } from '../values/Binding';
 import { Value } from '../values/Value';
+import { StringValue } from '../values/StringValue';
 
 // ECMA-262 8.1.1.1
 export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
@@ -14,20 +15,20 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
   }
 
   // ECMA-262 8.1.1.1.1
-  HasBinding(name: string) {
+  HasBinding(name: StringValue) {
     const envRec = this;
-    if (envRec[name]) return true;
+    if (envRec[name.value]) return true;
     return false;
   }
 
   // ECMA-262 8.1.1.1.2
-  CreateMutableBinding(name: string, deletable: boolean) {
+  CreateMutableBinding(name: StringValue, deletable: boolean) {
     const envRec = this;
 
-    assert(!envRec[name], `Environment record already has a binding for '${name}'`);
+    assert(!envRec[name.value], `Environment record already has a binding for '${name.value}'`);
 
-    envRec[name] = new Binding({
-      name,
+    envRec[name.value] = new Binding({
+      name: name.value,
       mutable: true,
       initialized: false,
       deletable,
@@ -38,13 +39,13 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
   }
 
   // ECMA-262 8.1.1.1.3
-  CreateImmutableBinding(name: string, strict: boolean) {
+  CreateImmutableBinding(name: StringValue, strict: boolean) {
     const envRec = this;
 
-    assert(!envRec[name], `Environment record already has a binding for '${name}'`);
+    assert(!envRec[name.value], `Environment record already has a binding for '${name.value}'`);
 
-    envRec[name] = new Binding({
-      name,
+    envRec[name.value] = new Binding({
+      name: name.value,
       mutable: false,
       initialized: false,
       deletable: false,
@@ -55,25 +56,25 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
   }
 
   // ECMA-262 8.1.1.1.4
-  InitializeBinding(name: string, value: Value) {
+  InitializeBinding(name: StringValue, value: Value) {
     const envRec = this;
 
-    assert(envRec[name], `Environment record does not have a binding for '${name}'`);
-    assert(!envRec[name].initialized, `Binding for '${name}' is already initialized`);
+    assert(envRec[name.value], `Environment record does not have a binding for '${name.value}'`);
+    assert(!envRec[name.value].initialized, `Binding for '${name.value}' is already initialized`);
 
-    envRec[name].initialize(value);
+    envRec[name.value].initialize(value);
 
     // return NormalCompletion(empty)
   }
 
   // ECMA-262 8.1.1.1.5
-  SetMutableBinding(name: string, value: Value, strict: boolean) {
+  SetMutableBinding(name: StringValue, value: Value, strict: boolean) {
     const envRec = this;
-    const binding = envRec[name];
+    const binding = envRec[name.value];
 
     if (!binding) {
       if (strict) {
-        throw new ReferenceError(`Cannot set value of uninitialized: '${name}'`);
+        throw new ReferenceError(`Cannot set value of uninitialized: '${name.value}'`);
       }
 
       envRec.CreateMutableBinding(name, true);
@@ -86,39 +87,39 @@ export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
     }
 
     if (!binding.initialized) {
-      throw new ReferenceError(`Cannot set value of uninitialized: '${name}'`);
+      throw new ReferenceError(`Cannot set value of uninitialized: '${name.value}'`);
     } else if (binding.mutable) {
       binding.value = value;
     } else {
       assert(binding.mutable === false, 'Should be changing value of an immutable binding');
-      if (strict) throw new TypeError(`Cannot change value of immutable binding: ${name}`);
+      if (strict) throw new TypeError(`Cannot change value of immutable binding: ${name.value}`);
     }
 
     // return NormalCompletion(empty)
   }
 
   // ECMA-262 8.1.1.1.6
-  GetBindingValue(name: string, strict: boolean) {
+  GetBindingValue(name: StringValue, strict: boolean) {
     const envRec = this;
 
-    assert(envRec[name], `Environment record does not have a binding for '${name}'`);
+    assert(envRec[name.value], `Environment record does not have a binding for '${name.value}'`);
 
-    if (!envRec[name].initialized) {
-      throw new ReferenceError(`Cannot get value of uninitialized: '${name}'`);
+    if (!envRec[name.value].initialized) {
+      throw new ReferenceError(`Cannot get value of uninitialized: '${name.value}'`);
     }
 
-    return envRec[name].value;
+    return envRec[name.value].value;
   }
 
   // ECMA-262 8.1.1.1.7
-  DeleteBinding(name: string) {
+  DeleteBinding(name: StringValue) {
     const envRec = this;
 
-    assert(envRec[name], `Environment record does not have a binding for '${name}'`);
+    assert(envRec[name.value], `Environment record does not have a binding for '${name.value}'`);
 
-    if (!envRec[name].deletable) return false;
+    if (!envRec[name.value].deletable) return false;
 
-    delete envRec[name];
+    delete envRec[name.value];
     return true;
   }
 

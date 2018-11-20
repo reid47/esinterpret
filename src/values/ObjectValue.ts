@@ -76,13 +76,13 @@ export class ObjectValue extends Value {
   }
 
   // ECMA-262 9.1.7
-  __HasProperty(propertyKey: PropertyKeyValue) {
+  __HasProperty(propertyKey: PropertyKeyValue): boolean {
     return OrdinaryHasProperty(this.__Realm, this, propertyKey);
   }
 
   // ECMA-262 9.1.8
   __Get(propertyKey: PropertyKeyValue, receiver: ObjectValue) {
-    return OrdinaryGet(this, propertyKey, receiver);
+    return OrdinaryGet(this.__Realm, this, propertyKey, receiver);
   }
 
   // ECMA-262 9.1.9

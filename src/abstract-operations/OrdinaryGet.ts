@@ -5,14 +5,17 @@ import { IsPropertyKey } from './comparison/IsPropertyKey';
 import { NullValue } from '../values/NullValue';
 import { IsDataDescriptor } from './IsDataDescriptor';
 import { IsAccessorDescriptor } from './IsAccessorDescriptor';
-import { Call } from './Call';
+import { Call } from './objects/Call';
+import { Realm } from '../environment/Realm';
+import { Value } from '../values/Value';
 
 // ECMA-262 9.1.8.1
 export function OrdinaryGet(
+  realm: Realm,
   obj: ObjectValue,
   propertyKey: PropertyKeyValue,
   receiver: ObjectValue
-) {
+): Value {
   assert(IsPropertyKey(propertyKey), 'Should be a valid property key');
 
   const desc = obj.__GetOwnProperty(propertyKey);
@@ -29,5 +32,5 @@ export function OrdinaryGet(
   const getter = desc.__Get;
   if (!getter) return undefined;
 
-  return Call(getter, receiver);
+  return Call(realm, getter, receiver);
 }

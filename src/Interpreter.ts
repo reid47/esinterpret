@@ -1,15 +1,46 @@
 import * as JS from '@babel/types';
 import { Realm } from './environment/Realm';
+import { CreateRealm } from './abstract-operations/CreateRealm';
+import { ExecutionContext } from './environment/ExecutionContext';
+import { UndefinedValue } from './values/UndefinedValue';
+import { ObjectCreate } from './abstract-operations/ObjectCreate';
+import { assert } from './assert';
+import { ObjectValue } from './values/ObjectValue';
 
 export class Interpreter {
-  realm: Realm;
-  ast: JS.File;
+  executionContextStack: ExecutionContext[];
 
-  constructor({ ast }: { ast: JS.File }) {
-    this.realm = new Realm();
-    this.ast = ast;
+  constructor() {
+    this.executionContextStack = [];
   }
 
+  get runningExecutionContext() {
+    return this.executionContextStack[this.executionContextStack.length - 1];
+  }
+
+  // ECMA-262 8.5
+  initializeRealm() {
+    const realm = CreateRealm();
+
+    const newContext = new ExecutionContext();
+    newContext.function = null;
+    newContext.realm = realm;
+    newContext.scriptOrModule = null;
+
+    this.executionContextStack.push(newContext);
+
+    const globalObj = ObjectCreate(realm, realm.__Intrinsics.__ObjectPrototype);
+    const thisValue = globalObj;
+    assert(globalObj instanceof ObjectValue, 'global should be an object');
+
+    realm.__GlobalObject = globalObj;
+    realm.__GlobalEnv = NewGlobalEnvironment(globalObj, thisValue);
+
+    return realm;
+  }
+}
+
+/*
   run() {
     this.onProgram(this.ast.program);
   }
@@ -159,3 +190,4 @@ export class Interpreter {
 
   private onWithStatement(statement: JS.WithStatement) {}
 }
+*/

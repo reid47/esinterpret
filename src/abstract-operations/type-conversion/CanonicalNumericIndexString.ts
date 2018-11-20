@@ -1,6 +1,6 @@
 import { assert } from '../../assert';
 import { StringValue } from '../../values/StringValue';
-import { SameValue } from '../SameValue';
+import { SameValue } from '../comparison/SameValue';
 import { ToNumber } from './ToNumber';
 import { Realm } from '../../environment/Realm';
 import { ToString } from './ToString';

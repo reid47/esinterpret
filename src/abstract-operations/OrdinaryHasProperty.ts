@@ -6,7 +6,11 @@ import { IsPropertyKey } from './comparison/IsPropertyKey';
 import { NullValue } from '../values/NullValue';
 
 // ECMA-262 9.1.7.1
-export function OrdinaryHasProperty(realm: Realm, obj: ObjectValue, propertyKey: PropertyKeyValue) {
+export function OrdinaryHasProperty(
+  realm: Realm,
+  obj: ObjectValue,
+  propertyKey: PropertyKeyValue
+): boolean {
   assert(IsPropertyKey(propertyKey), 'Should be a valid property key');
 
   const hasOwn = obj.__GetOwnProperty(propertyKey);

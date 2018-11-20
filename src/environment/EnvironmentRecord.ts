@@ -1,5 +1,6 @@
 import { Value } from '../values/Value';
 import { Realm } from './Realm';
+import { StringValue } from '../values/StringValue';
 
 // ECMA-262 8.1.1
 export abstract class EnvironmentRecord {
@@ -9,19 +10,19 @@ export abstract class EnvironmentRecord {
     this.__Realm = realm;
   }
 
-  abstract HasBinding(name: string): boolean;
+  abstract HasBinding(name: StringValue): boolean;
 
-  abstract CreateMutableBinding(name: string, deletable: boolean);
+  abstract CreateMutableBinding(name: StringValue, deletable: boolean);
 
-  abstract CreateImmutableBinding(name: string, strict: boolean);
+  abstract CreateImmutableBinding(name: StringValue, strict: boolean);
 
-  abstract InitializeBinding(name: string, value: Value);
+  abstract InitializeBinding(name: StringValue, value: Value);
 
-  abstract SetMutableBinding(name: string, value: Value, strict: boolean);
+  abstract SetMutableBinding(name: StringValue, value: Value, strict: boolean);
 
-  abstract GetBindingValue(name: string, strict: boolean);
+  abstract GetBindingValue(name: StringValue, strict: boolean);
 
-  abstract DeleteBinding(name: string);
+  abstract DeleteBinding(name: StringValue);
 
   abstract HasThisBinding(): boolean;
 

@@ -1,9 +1,9 @@
-import { PropertyDescriptor } from '../values/PropertyDescriptor';
-import { ObjectCreate } from './ObjectCreate';
-import { Realm } from '../environment/Realm';
-import { assert } from '../assert';
-import { CreateDataProperty } from './objects/CreateDataProperty';
-import { StringValue } from '../values/StringValue';
+import { PropertyDescriptor } from '../../values/PropertyDescriptor';
+import { ObjectCreate } from '../ObjectCreate';
+import { Realm } from '../../environment/Realm';
+import { assert } from '../../assert';
+import { CreateDataProperty } from '../objects/CreateDataProperty';
+import { StringValue } from '../../values/StringValue';
 
 // ECMA-262 6.2.5.4
 export function FromPropertyDescriptor(realm: Realm, desc: PropertyDescriptor) {
