@@ -1,9 +1,7 @@
-import * as JS from '@babel/types';
 import { parse } from '@babel/parser';
 import { Realm } from './environment/Realm';
 import { CreateRealm } from './abstract-operations/CreateRealm';
 import { ExecutionContext } from './environment/ExecutionContext';
-import { UndefinedValue } from './values/UndefinedValue';
 import { ObjectCreate } from './abstract-operations/ObjectCreate';
 import { assert } from './assert';
 import { ObjectValue } from './values/ObjectValue';
@@ -11,7 +9,7 @@ import { NewGlobalEnvironment } from './abstract-operations/NewGlobalEnvironment
 import { PendingJob } from './environment/PendingJob';
 import { ScriptRecord } from './environment/ScriptRecord';
 import { GlobalDeclarationInstantiation } from './abstract-operations/GlobalDeclarationInstantiation';
-import { evaluate } from './evaluation/evaluate';
+import { evaluate } from './evaluate';
 
 export class Interpreter {
   realm: Realm;
