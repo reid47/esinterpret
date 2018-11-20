@@ -1,17 +1,13 @@
 import { EnvironmentRecord } from './EnvironmentRecord';
 import { Realm } from './Realm';
-import { HasProperty } from '../abstract-operations/objects/HasProperty';
-import { Get } from '../abstract-operations/objects/Get';
 import { ObjectValue } from '../values/ObjectValue';
 import { StringValue } from '../values/StringValue';
 import { Value } from '../values/Value';
-import { ToBoolean } from '../abstract-operations/type-conversion/ToBoolean';
-import { DefinePropertyOrThrow } from '../abstract-operations/objects/DefinePropertyOrThrow';
 import { PropertyDescriptor } from '../values/PropertyDescriptor';
 import { UndefinedValue } from '../values/UndefinedValue';
 import { BooleanValue } from '../values/BooleanValue';
 import { assert } from '../assert';
-import { Set } from '../abstract-operations/objects/Set';
+import * as Ops from '../operations';
 
 // ECMA-262 8.1.1.2
 export class ObjectEnvironmentRecord extends EnvironmentRecord {
@@ -27,14 +23,14 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
   HasBinding(name: StringValue): boolean {
     const envRec = this;
     const bindings = this.object;
-    const foundBinding = HasProperty(bindings, name);
+    const foundBinding = Ops.HasProperty(bindings, name);
 
     if (!foundBinding) return false;
     if (!envRec.withEnvironment) return true;
 
-    const unscopables = Get(bindings, envRec.__Realm.__Intrinsics.__Symbol_unscopables);
+    const unscopables = Ops.Get(bindings, envRec.__Realm.__Intrinsics.__Symbol_unscopables);
     if (unscopables instanceof ObjectValue) {
-      const blocked = ToBoolean(envRec.__Realm, Get(unscopables, name));
+      const blocked = Ops.ToBoolean(envRec.__Realm, Ops.Get(unscopables, name));
       if (blocked.value === true) return false;
     }
 
@@ -52,7 +48,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
     desc.__Enumerable = new BooleanValue(envRec.__Realm, true);
     desc.__Configurable = new BooleanValue(envRec.__Realm, deletable);
 
-    return DefinePropertyOrThrow(envRec.__Realm, bindings, name, desc);
+    return Ops.DefinePropertyOrThrow(envRec.__Realm, bindings, name, desc);
   }
 
   // ECMA-262 8.1.1.2.3
@@ -71,7 +67,7 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
   SetMutableBinding(name: StringValue, value: Value, strict: boolean) {
     const envRec = this;
     const bindings = envRec.object;
-    return Set(envRec.__Realm, bindings, name, value, new BooleanValue(envRec.__Realm, strict));
+    return Ops.Set(envRec.__Realm, bindings, name, value, new BooleanValue(envRec.__Realm, strict));
   }
 
   // ECMA-262 8.1.1.2.6
@@ -79,14 +75,14 @@ export class ObjectEnvironmentRecord extends EnvironmentRecord {
     const envRec = this;
     const bindings = envRec.object;
 
-    const value = HasProperty(bindings, name);
+    const value = Ops.HasProperty(bindings, name);
     if (!value) {
       if (!strict) return false;
 
       throw new ReferenceError('Could not get binding value');
     }
 
-    return Get(bindings, name);
+    return Ops.Get(bindings, name);
   }
 
   // ECMA-262 8.1.1.2.7

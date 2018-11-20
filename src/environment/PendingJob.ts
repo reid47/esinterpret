@@ -1,6 +1,5 @@
 import { Value } from '../values/Value';
 import { Realm } from './Realm';
-import { StringValue } from '../values/StringValue';
 import { ScriptRecord } from './ScriptRecord';
 
 // ECMA-262 8.4

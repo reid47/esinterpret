@@ -3,14 +3,10 @@ import { ObjectEnvironmentRecord } from './ObjectEnvironmentRecord';
 import { Value } from '../values/Value';
 import { DeclarativeEnvironmentRecord } from './DeclarativeEnvironmentRecord';
 import { StringValue } from '../values/StringValue';
-import { HasOwnProperty } from '../abstract-operations/objects/HasOwnProperty';
-import { IsExtensible } from '../abstract-operations/comparison/IsExtensible';
-import { IsDataDescriptor } from '../abstract-operations/IsDataDescriptor';
 import { UndefinedValue } from '../values/UndefinedValue';
 import { PropertyDescriptor } from '../values/PropertyDescriptor';
 import { BooleanValue } from '../values/BooleanValue';
-import { DefinePropertyOrThrow } from '../abstract-operations/objects/DefinePropertyOrThrow';
-import { Set } from '../abstract-operations/objects/Set';
+import * as Ops from '../operations';
 
 // ECMA-262 8.1.1.4
 export class GlobalEnvironmentRecord extends EnvironmentRecord {
@@ -104,7 +100,7 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
 
     const objRec = envRec.__ObjectRecord;
     const globalObject = objRec.object;
-    const existingProp = HasOwnProperty(globalObject, name);
+    const existingProp = Ops.HasOwnProperty(globalObject, name);
 
     if (existingProp) {
       const status = objRec.DeleteBinding(name);
@@ -177,10 +173,10 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
     const objRec = envRec.__ObjectRecord;
     const globalObject = objRec.object;
 
-    const hasProperty = HasOwnProperty(globalObject, name);
+    const hasProperty = Ops.HasOwnProperty(globalObject, name);
     if (hasProperty) return true;
 
-    return IsExtensible(globalObject);
+    return Ops.IsExtensible(globalObject);
   }
 
   // ECMA-262 8.1.1.4.16
@@ -190,10 +186,10 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
     const globalObject = objRec.object;
 
     const existingProp = globalObject.__GetOwnProperty(name);
-    if (!existingProp) return IsExtensible(globalObject);
+    if (!existingProp) return Ops.IsExtensible(globalObject);
     if (existingProp.__Configurable && existingProp.__Configurable.value === true) return true;
     if (
-      IsDataDescriptor(existingProp) &&
+      Ops.IsDataDescriptor(existingProp) &&
       existingProp.__Writable &&
       existingProp.__Writable.value === true &&
       existingProp.__Enumerable &&
@@ -211,8 +207,8 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
     const objRec = envRec.__ObjectRecord;
     const globalObject = objRec.object;
 
-    const hasProperty = HasOwnProperty(globalObject, name);
-    const extensible = IsExtensible(globalObject);
+    const hasProperty = Ops.HasOwnProperty(globalObject, name);
+    const extensible = Ops.IsExtensible(globalObject);
     if (!hasProperty && extensible) {
       objRec.CreateMutableBinding(name, deletable);
       objRec.InitializeBinding(name, new UndefinedValue(envRec.__Realm));
@@ -245,9 +241,9 @@ export class GlobalEnvironmentRecord extends EnvironmentRecord {
       desc.__Value = value;
     }
 
-    DefinePropertyOrThrow(envRec.__Realm, globalObject, name, desc);
+    Ops.DefinePropertyOrThrow(envRec.__Realm, globalObject, name, desc);
 
-    Set(envRec.__Realm, globalObject, name, value, new BooleanValue(envRec.__Realm, false));
+    Ops.Set(envRec.__Realm, globalObject, name, value, new BooleanValue(envRec.__Realm, false));
 
     const varDeclaredNames = envRec.__VarNames;
     if (varDeclaredNames.indexOf(name.value) === -1) {

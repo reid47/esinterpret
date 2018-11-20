@@ -1,15 +1,12 @@
 import { parse } from '@babel/parser';
 import { Realm } from './environment/Realm';
-import { CreateRealm } from './abstract-operations/CreateRealm';
 import { ExecutionContext } from './environment/ExecutionContext';
-import { ObjectCreate } from './abstract-operations/ObjectCreate';
 import { assert } from './assert';
 import { ObjectValue } from './values/ObjectValue';
-import { NewGlobalEnvironment } from './abstract-operations/NewGlobalEnvironment';
 import { PendingJob } from './environment/PendingJob';
 import { ScriptRecord } from './environment/ScriptRecord';
-import { GlobalDeclarationInstantiation } from './abstract-operations/GlobalDeclarationInstantiation';
 import { evaluate } from './evaluate';
+import * as Ops from './operations';
 
 export class Interpreter {
   realm: Realm;
@@ -55,7 +52,7 @@ export class Interpreter {
 
     const scriptBody = scriptRecord.__ECMAScriptCode;
 
-    GlobalDeclarationInstantiation(scriptBody, globalEnv);
+    Ops.GlobalDeclarationInstantiation(scriptBody, globalEnv);
 
     const result = evaluate(this.realm, scriptBody, globalEnv);
 
@@ -68,7 +65,7 @@ export class Interpreter {
 
   // ECMA-262 8.5
   initializeRealm() {
-    const realm = CreateRealm();
+    const realm = Ops.CreateRealm();
 
     const newContext = new ExecutionContext();
     newContext.function = null;
@@ -77,13 +74,13 @@ export class Interpreter {
 
     this.executionContextStack.push(newContext);
 
-    const globalObj = ObjectCreate(realm, realm.__Intrinsics.__ObjectPrototype);
+    const globalObj = Ops.ObjectCreate(realm, realm.__Intrinsics.__ObjectPrototype);
     const thisValue = globalObj;
     assert(globalObj instanceof ObjectValue, 'global should be an object');
 
     // ECMA-262 8.2.3
     realm.__GlobalObject = globalObj;
-    realm.__GlobalEnv = NewGlobalEnvironment(realm, globalObj, thisValue);
+    realm.__GlobalEnv = Ops.NewGlobalEnvironment(realm, globalObj, thisValue);
 
     // ECMA-262 8.2.4
     // TODO: SetDefaultGlobalBindings

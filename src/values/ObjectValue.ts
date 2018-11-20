@@ -1,24 +1,14 @@
 import { Value } from './Value';
 import { NullValue } from './NullValue';
 import { BooleanValue } from './BooleanValue';
-import { OrdinaryGetPrototypeOf } from '../abstract-operations/OrdinaryGetPrototypeOf';
-import { OrdinarySetPrototypeOf } from '../abstract-operations/OrdinarySetPrototypeOf';
-import { OrdinaryIsExtensible } from '../abstract-operations/OrdinaryIsExtensible';
 import { Realm } from '../environment/Realm';
-import { OrdinaryPreventExtensions } from '../abstract-operations/OrdinaryPreventExtensions';
-import { OrdinaryGetOwnProperty } from '../abstract-operations/OrdinaryGetOwnProperty';
-import { OrdinaryDefineOwnProperty } from '../abstract-operations/OrdinaryDefineOwnProperty';
 import { StringValue } from './StringValue';
 import { SymbolValue } from './SymbolValue';
 import { PropertyKeyValue } from '../types';
 import { assert } from '../assert';
 import { PropertyDescriptor } from './PropertyDescriptor';
-import { OrdinaryHasProperty } from '../abstract-operations/OrdinaryHasProperty';
-import { OrdinaryGet } from '../abstract-operations/OrdinaryGet';
-import { OrdinarySet } from '../abstract-operations/OrdinarySet';
-import { OrdinaryDelete } from '../abstract-operations/OrdinaryDelete';
 import { NumberValue } from './NumberValue';
-import { OrdinaryOwnPropertyKeys } from '../abstract-operations/OrdinaryOwnPropertyKeys';
+import * as Ops from '../operations';
 
 export class ObjectValue extends Value {
   __Prototype: ObjectValue | NullValue;
@@ -51,57 +41,57 @@ export class ObjectValue extends Value {
 
   // ECMA-262 9.1.1
   __GetPrototypeOf() {
-    return OrdinaryGetPrototypeOf(this);
+    return Ops.OrdinaryGetPrototypeOf(this);
   }
 
   // ECMA-262 9.1.2
   __SetPrototypeOf(newProto: Value) {
-    return OrdinarySetPrototypeOf(this, newProto);
+    return Ops.OrdinarySetPrototypeOf(this, newProto);
   }
 
   // ECMA-262 9.1.3
   __IsExtensible() {
-    return OrdinaryIsExtensible(this);
+    return Ops.OrdinaryIsExtensible(this);
   }
 
   // ECMA-262 9.1.4
   __PreventExtensions() {
-    return OrdinaryPreventExtensions(this.__Realm, this);
+    return Ops.OrdinaryPreventExtensions(this.__Realm, this);
   }
 
   // ECMA-262 9.1.5
   __GetOwnProperty(propertyKey: PropertyKeyValue) {
-    return OrdinaryGetOwnProperty(this, propertyKey);
+    return Ops.OrdinaryGetOwnProperty(this, propertyKey);
   }
 
   // ECMA-262 9.1.6
   __DefineOwnProperty(propertyKey: PropertyKeyValue, desc: PropertyDescriptor) {
-    return OrdinaryDefineOwnProperty(this.__Realm, this, propertyKey, desc);
+    return Ops.OrdinaryDefineOwnProperty(this.__Realm, this, propertyKey, desc);
   }
 
   // ECMA-262 9.1.7
   __HasProperty(propertyKey: PropertyKeyValue): boolean {
-    return OrdinaryHasProperty(this.__Realm, this, propertyKey);
+    return Ops.OrdinaryHasProperty(this.__Realm, this, propertyKey);
   }
 
   // ECMA-262 9.1.8
   __Get(propertyKey: PropertyKeyValue, receiver: ObjectValue) {
-    return OrdinaryGet(this.__Realm, this, propertyKey, receiver);
+    return Ops.OrdinaryGet(this.__Realm, this, propertyKey, receiver);
   }
 
   // ECMA-262 9.1.9
   __Set(propertyKey: PropertyKeyValue, value: Value, receiver: ObjectValue) {
-    return OrdinarySet(this.__Realm, this, propertyKey, value, receiver);
+    return Ops.OrdinarySet(this.__Realm, this, propertyKey, value, receiver);
   }
 
   // ECMA-262 9.1.10
   __Delete(propertyKey: PropertyKeyValue) {
-    return OrdinaryDelete(this, propertyKey);
+    return Ops.OrdinaryDelete(this, propertyKey);
   }
 
   // ECMA-262 9.1.11
   __OwnPropertyKeys(): PropertyKeyValue[] {
-    return OrdinaryOwnPropertyKeys(this);
+    return Ops.OrdinaryOwnPropertyKeys(this);
   }
 
   __InternalGetPropertyBinding(propertyKey: PropertyKeyValue) {
