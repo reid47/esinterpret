@@ -14,7 +14,7 @@ export function OrdinarySetPrototypeOf(obj: ObjectValue, newProto: Value) {
   if (SameValue(newProto, obj.__Prototype)) return true;
   if (!obj.__Extensible) return false;
 
-  let p = newProto;
+  let p = newProto as ObjectValue | NullValue;
   let done = false;
 
   while (!done) {
@@ -23,7 +23,7 @@ export function OrdinarySetPrototypeOf(obj: ObjectValue, newProto: Value) {
     } else if (SameValue(p, obj)) {
       return false;
     } else {
-      if (p.__GetPrototypeOf !== ObjectValue.__GetPrototypeOf) {
+      if (p.__GetPrototypeOf !== ObjectValue.prototype.__GetPrototypeOf) {
         // TODO: not sure when this condition is true
         done = true;
       } else {

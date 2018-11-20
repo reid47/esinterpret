@@ -1,6 +1,8 @@
 import { Realm } from '../environment/Realm';
 import { LexicalEnvironment } from '../environment/LexicalEnvironment';
 import { DeclarativeEnvironmentRecord } from '../environment/DeclarativeEnvironmentRecord';
+import { ObjectEnvironmentRecord } from '../environment/ObjectEnvironmentRecord';
+import { GlobalEnvironmentRecord } from '../environment/GlobalEnvironmentRecord';
 
 // ECMA-262 8.1.2.5
 export function NewGlobalEnvironment(realm: Realm, globalObj, thisValue) {

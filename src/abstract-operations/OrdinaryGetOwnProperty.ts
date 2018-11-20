@@ -7,7 +7,10 @@ import { PropertyKeyValue } from '../types';
 import { PropertyDescriptor } from '../values/PropertyDescriptor';
 
 // ECMA-262 9.1.5.1
-export function OrdinaryGetOwnProperty(obj: ObjectValue, propertyKey: PropertyKeyValue) {
+export function OrdinaryGetOwnProperty(
+  obj: ObjectValue,
+  propertyKey: PropertyKeyValue
+): PropertyDescriptor | undefined {
   assert(IsPropertyKey(propertyKey), 'Property key should be either a string or a symbol');
 
   const propertyBinding = obj.__InternalGetPropertyBinding(propertyKey);
