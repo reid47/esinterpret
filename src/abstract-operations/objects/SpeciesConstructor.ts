@@ -18,7 +18,7 @@ export default function SpeciesConstructor(
 
   if (!ctor) return defaultConstructor;
 
-  const species = Get(ctor, realm.__Intrinsics.__Symbol_species);
+  const species = Get(ctor as ObjectValue, realm.__Intrinsics.__Symbol_species);
 
   if (species === undefined || species === null) {
     return defaultConstructor;

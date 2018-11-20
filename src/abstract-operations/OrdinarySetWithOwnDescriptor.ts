@@ -69,7 +69,7 @@ export function OrdinarySetWithOwnDescriptor(
   const setter = ownDesc.__Set;
   if (!setter) return false;
 
-  Call(setter, receiver, [value]);
+  Call(realm, setter, receiver, [value]);
 
   return true;
 }

@@ -1,4 +1,5 @@
 import * as JS from '@babel/types';
+import { parse } from '@babel/parser';
 import { Realm } from './environment/Realm';
 import { CreateRealm } from './abstract-operations/CreateRealm';
 import { ExecutionContext } from './environment/ExecutionContext';
@@ -6,16 +7,65 @@ import { UndefinedValue } from './values/UndefinedValue';
 import { ObjectCreate } from './abstract-operations/ObjectCreate';
 import { assert } from './assert';
 import { ObjectValue } from './values/ObjectValue';
+import { NewGlobalEnvironment } from './abstract-operations/NewGlobalEnvironment';
+import { PendingJob } from './environment/PendingJob';
+import { ScriptRecord } from './environment/ScriptRecord';
+import { GlobalDeclarationInstantiation } from './abstract-operations/GlobalDeclarationInstantiation';
+import { evaluate } from './evaluation/evaluate';
 
 export class Interpreter {
+  realm: Realm;
   executionContextStack: ExecutionContext[];
+  scriptJobQueue: PendingJob[];
+  promiseJobQueue: PendingJob[];
 
   constructor() {
+    this.realm = this.initializeRealm();
     this.executionContextStack = [];
+    this.scriptJobQueue = [];
+    this.promiseJobQueue = [];
   }
 
   get runningExecutionContext() {
     return this.executionContextStack[this.executionContextStack.length - 1];
+  }
+
+  // ECMA-262 15.1.9
+  parseScript(source: string, realm: Realm): ScriptRecord {
+    // TODO: handle parse errors per spec
+    const body = parse(source);
+    return new ScriptRecord(realm, body, source);
+  }
+
+  // ECMA 15.1.12
+  evaluateScript(source: string) {
+    // TODO: handle parse errors per spec
+    const scriptRecord = this.parseScript(source, this.realm);
+
+    const globalEnv = scriptRecord.__Realm.__GlobalEnv;
+
+    const scriptContext = new ExecutionContext();
+    scriptContext.function = null;
+    scriptContext.realm = scriptRecord.__Realm;
+    scriptContext.scriptOrModule = scriptRecord;
+    scriptContext.variableEnvironment = globalEnv;
+    scriptContext.lexicalEnvironment = globalEnv;
+
+    // TODO: Suspend the currently running execution context?
+
+    this.executionContextStack.push(scriptContext);
+
+    const scriptBody = scriptRecord.__ECMAScriptCode;
+
+    GlobalDeclarationInstantiation(scriptBody, globalEnv);
+
+    const result = evaluate(this.realm, scriptBody, globalEnv);
+
+    this.executionContextStack.pop();
+
+    assert(this.executionContextStack.length > 0, 'execution context stack should not be empty');
+
+    return result;
   }
 
   // ECMA-262 8.5
@@ -33,161 +83,13 @@ export class Interpreter {
     const thisValue = globalObj;
     assert(globalObj instanceof ObjectValue, 'global should be an object');
 
+    // ECMA-262 8.2.3
     realm.__GlobalObject = globalObj;
-    realm.__GlobalEnv = NewGlobalEnvironment(globalObj, thisValue);
+    realm.__GlobalEnv = NewGlobalEnvironment(realm, globalObj, thisValue);
+
+    // ECMA-262 8.2.4
+    // TODO: SetDefaultGlobalBindings
 
     return realm;
   }
 }
-
-/*
-  run() {
-    this.onProgram(this.ast.program);
-  }
-
-  lastExpressionValue() {}
-
-  private onBlockStatement(statement: JS.BlockStatement) {
-    statement.body.forEach(innerStatement => {
-      this.onStatement(innerStatement);
-    });
-  }
-
-  private onBreakStatement(statement: JS.BreakStatement) {}
-
-  private onClassDeclaration(statement: JS.ClassDeclaration) {}
-
-  private onContinueStatement(statement: JS.ContinueStatement) {}
-
-  private onDebuggerStatement(statement: JS.DebuggerStatement) {}
-
-  private onDoWhileStatement(statement: JS.DoWhileStatement) {}
-
-  private onEmptyStatement(statement: JS.EmptyStatement) {}
-
-  private onExpressionStatement(statement: JS.ExpressionStatement) {}
-
-  private onForInStatement(statement: JS.ForInStatement) {}
-
-  private onForOfStatement(statement: JS.ForOfStatement) {}
-
-  private onForStatement(statement: JS.ForStatement) {}
-
-  private onFunctionDeclaration(statement: JS.FunctionDeclaration) {}
-
-  private onIfStatement(statement: JS.IfStatement) {}
-
-  private onLabeledStatement(statement: JS.LabeledStatement) {}
-
-  private onProgram(program: JS.Program) {
-    program.body.forEach(statement => {
-      this.onStatement(statement);
-    });
-  }
-
-  private onReturnStatement(statement: JS.ReturnStatement) {}
-
-  private onStatement(statement: JS.Statement) {
-    switch (statement.type) {
-      case 'BlockStatement':
-        this.onBlockStatement(statement);
-        return;
-
-      case 'BreakStatement':
-        this.onBreakStatement(statement);
-        return;
-
-      case 'ClassDeclaration':
-        this.onClassDeclaration(statement);
-        return;
-
-      case 'ContinueStatement':
-        this.onContinueStatement(statement);
-        return;
-
-      case 'DebuggerStatement':
-        this.onDebuggerStatement(statement);
-        return;
-
-      case 'DoWhileStatement':
-        this.onDoWhileStatement(statement);
-        return;
-
-      case 'EmptyStatement':
-        this.onEmptyStatement(statement);
-        return;
-
-      case 'ExpressionStatement':
-        this.onExpressionStatement(statement);
-        return;
-
-      case 'ForInStatement':
-        this.onForInStatement(statement);
-        return;
-
-      case 'ForOfStatement':
-        this.onForOfStatement(statement);
-        return;
-
-      case 'ForStatement':
-        this.onForStatement(statement);
-        return;
-
-      case 'FunctionDeclaration':
-        this.onFunctionDeclaration(statement);
-        return;
-
-      case 'IfStatement':
-        this.onIfStatement(statement);
-        return;
-
-      case 'LabeledStatement':
-        this.onLabeledStatement(statement);
-        return;
-
-      case 'ReturnStatement':
-        this.onReturnStatement(statement);
-        return;
-
-      case 'SwitchStatement':
-        this.onSwitchStatement(statement);
-        return;
-
-      case 'ThrowStatement':
-        this.onThrowStatement(statement);
-        return;
-
-      case 'TryStatement':
-        this.onTryStatement(statement);
-        return;
-
-      case 'VariableDeclaration':
-        this.onVariableDeclaration(statement);
-        return;
-
-      case 'WhileStatement':
-        this.onWhileStatement(statement);
-        return;
-
-      case 'WithStatement':
-        this.onWithStatement(statement);
-        return;
-
-      default:
-        throw new Error(`Unsupported statement type: ${statement.type}`);
-    }
-  }
-
-  private onSwitchStatement(statement: JS.SwitchStatement) {}
-
-  private onThrowStatement(statement: JS.ThrowStatement) {}
-
-  private onTryStatement(statement: JS.TryStatement) {}
-
-  private onVariableDeclaration(statement: JS.VariableDeclaration) {}
-
-  private onWhileStatement(statement: JS.WhileStatement) {}
-
-  private onWithStatement(statement: JS.WithStatement) {}
-}
-*/

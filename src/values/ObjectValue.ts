@@ -18,6 +18,7 @@ import { OrdinaryGet } from '../abstract-operations/OrdinaryGet';
 import { OrdinarySet } from '../abstract-operations/OrdinarySet';
 import { OrdinaryDelete } from '../abstract-operations/OrdinaryDelete';
 import { NumberValue } from './NumberValue';
+import { OrdinaryOwnPropertyKeys } from '../abstract-operations/OrdinaryOwnPropertyKeys';
 
 export class ObjectValue extends Value {
   __Prototype: ObjectValue | NullValue;
@@ -37,6 +38,9 @@ export class ObjectValue extends Value {
 
   // Set when creating an object from a symbol (e.g. ECMA-262 7.1.13)
   __SymbolData?: SymbolValue;
+
+  // Set for RegExps
+  __RegExpMatcher?: Value;
 
   constructor(realm: Realm, proto?: ObjectValue | NullValue) {
     super(realm);

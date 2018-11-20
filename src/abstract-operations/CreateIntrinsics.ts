@@ -14,8 +14,8 @@ export function CreateIntrinsics(realm: Realm) {
   const thrower = void '?'; // TODO
   intrinsics.__ThrowTypeError = thrower;
 
-  const funcProto = CreateBuiltinFunction(realm);
-  intrinsics.__FunctionPrototype = funcProto;
+  // const funcProto = CreateBuiltinFunction(realm);
+  // intrinsics.__FunctionPrototype = funcProto;
 
   // thrower.__SetPrototypeOf(funcProto);
 
