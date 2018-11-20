@@ -5,6 +5,7 @@ import { Realm } from '../../environment/Realm';
 import { Call } from '../objects/Call';
 import { Get } from '../objects/Get';
 import { IsCallable } from '../comparison/IsCallable';
+import { StringValue } from '../../values/StringValue';
 
 // ECMA262 7.1.1.1
 export function OrdinaryToPrimitive(realm: Realm, obj: ObjectValue, hint: TypeHint = 'default') {
@@ -15,7 +16,7 @@ export function OrdinaryToPrimitive(realm: Realm, obj: ObjectValue, hint: TypeHi
   const methodNames = hint === 'string' ? ['toString', 'valueOf'] : ['valueOf', 'toString'];
 
   for (const methodName of methodNames) {
-    const method = Get(obj, methodName);
+    const method = Get(obj, new StringValue(realm, methodName));
 
     if (IsCallable(method)) {
       const result = Call(realm, method, obj);
