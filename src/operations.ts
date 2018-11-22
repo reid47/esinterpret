@@ -1,24 +1,879 @@
 import * as Nodes from '@babel/types';
-import { Realm } from './environment/Realm';
-import { ObjectValue } from './values/ObjectValue';
 import { PropertyKeyValue, TypeHint } from './types';
-import { Value } from './values/Value';
 import { assert } from './assert';
-import { ArrayExotic } from './values/ArrayExotic';
-import { ProxyValue } from './values/ProxyValue';
-import { FunctionValue } from './values/FunctionValue';
-import { NumberValue } from './values/NumberValue';
-import { StringValue } from './values/StringValue';
-import { SymbolValue } from './values/SymbolValue';
-import { UndefinedValue } from './values/UndefinedValue';
-import { NullValue } from './values/NullValue';
-import { BooleanValue } from './values/BooleanValue';
-import { PropertyDescriptor } from './values/PropertyDescriptor';
-import { BoundFunctionExotic } from './values/BoundFunctionExotic';
-import { GlobalEnvironmentRecord } from './environment/GlobalEnvironmentRecord';
-import { LexicalEnvironment } from './environment/LexicalEnvironment';
-import { DeclarativeEnvironmentRecord } from './environment/DeclarativeEnvironmentRecord';
-import { ObjectEnvironmentRecord } from './environment/ObjectEnvironmentRecord';
+
+export abstract class Value {
+  __Realm: Realm;
+
+  constructor(realm: Realm) {
+    this.__Realm = realm;
+  }
+
+  getType() {
+    return this.constructor;
+  }
+}
+
+// ECMA-262 9.1
+export class ObjectValue extends Value {
+  __Prototype: ObjectValue | NullValue;
+  __Extensible: BooleanValue;
+
+  properties: Map<StringValue, any>;
+  symbols: Map<SymbolValue, any>;
+
+  // Set when creating an object from a boolean (e.g. ECMA-262 7.1.13)
+  __BooleanData?: BooleanValue;
+
+  // Set when creating an object from a number (e.g. ECMA-262 7.1.13)
+  __NumberData?: NumberValue;
+
+  // Set when creating an object from a string (e.g. ECMA-262 7.1.13)
+  __StringData?: StringValue;
+
+  // Set when creating an object from a symbol (e.g. ECMA-262 7.1.13)
+  __SymbolData?: SymbolValue;
+
+  // Set for RegExps
+  __RegExpMatcher?: Value;
+
+  constructor(realm: Realm, proto?: ObjectValue | NullValue) {
+    super(realm);
+    this.__Prototype = proto || new NullValue(realm);
+    this.properties = new Map();
+    this.symbols = new Map();
+  }
+
+  // ECMA-262 9.1.1
+  __GetPrototypeOf() {
+    return OrdinaryGetPrototypeOf(this);
+  }
+
+  // ECMA-262 9.1.2
+  __SetPrototypeOf(newProto: Value) {
+    return OrdinarySetPrototypeOf(this, newProto);
+  }
+
+  // ECMA-262 9.1.3
+  __IsExtensible() {
+    return OrdinaryIsExtensible(this);
+  }
+
+  // ECMA-262 9.1.4
+  __PreventExtensions() {
+    return OrdinaryPreventExtensions(this.__Realm, this);
+  }
+
+  // ECMA-262 9.1.5
+  __GetOwnProperty(propertyKey: PropertyKeyValue) {
+    return OrdinaryGetOwnProperty(this, propertyKey);
+  }
+
+  // ECMA-262 9.1.6
+  __DefineOwnProperty(propertyKey: PropertyKeyValue, desc: PropertyDescriptor) {
+    return OrdinaryDefineOwnProperty(this.__Realm, this, propertyKey, desc);
+  }
+
+  // ECMA-262 9.1.7
+  __HasProperty(propertyKey: PropertyKeyValue): boolean {
+    return OrdinaryHasProperty(this.__Realm, this, propertyKey);
+  }
+
+  // ECMA-262 9.1.8
+  __Get(propertyKey: PropertyKeyValue, receiver: ObjectValue) {
+    return OrdinaryGet(this.__Realm, this, propertyKey, receiver);
+  }
+
+  // ECMA-262 9.1.9
+  __Set(propertyKey: PropertyKeyValue, value: Value, receiver: ObjectValue) {
+    return OrdinarySet(this.__Realm, this, propertyKey, value, receiver);
+  }
+
+  // ECMA-262 9.1.10
+  __Delete(propertyKey: PropertyKeyValue) {
+    return OrdinaryDelete(this, propertyKey);
+  }
+
+  // ECMA-262 9.1.11
+  __OwnPropertyKeys(): PropertyKeyValue[] {
+    return OrdinaryOwnPropertyKeys(this);
+  }
+
+  __InternalGetPropertyBinding(propertyKey: PropertyKeyValue) {
+    if (propertyKey instanceof StringValue) {
+      return this.properties.get(propertyKey);
+    }
+
+    if (propertyKey instanceof SymbolValue) {
+      return this.symbols.get(propertyKey);
+    }
+
+    assert(false, 'Could not get property binding');
+  }
+
+  __InternalSetPropertyBinding(propertyKey: PropertyKeyValue, desc: PropertyDescriptor) {
+    if (propertyKey instanceof StringValue) {
+      return this.properties.set(propertyKey, desc);
+    }
+
+    if (propertyKey instanceof SymbolValue) {
+      return this.symbols.set(propertyKey, desc);
+    }
+
+    assert(false, 'Could not set property binding');
+  }
+
+  __InternalDeletePropertyBinding(propertyKey: PropertyKeyValue) {
+    if (propertyKey instanceof StringValue) {
+      return this.properties.delete(propertyKey);
+    }
+
+    if (propertyKey instanceof SymbolValue) {
+      return this.symbols.delete(propertyKey);
+    }
+
+    assert(false, 'Could not delete property binding');
+  }
+}
+
+export class Binding {
+  name: string;
+  mutable: boolean;
+  initialized: boolean;
+  deletable: boolean;
+  strict: boolean;
+  value: Value;
+
+  constructor({
+    name,
+    mutable,
+    initialized,
+    deletable,
+    strict
+  }: {
+    name: string;
+    mutable: boolean;
+    initialized: boolean;
+    deletable: boolean;
+    strict: boolean;
+  }) {
+    this.name = name;
+    this.mutable = mutable;
+    this.initialized = initialized;
+    this.deletable = deletable;
+    this.strict = strict;
+  }
+
+  initialize(value: Value) {
+    this.value = value;
+    this.initialized = true;
+  }
+}
+
+export class BooleanValue extends Value {
+  value: boolean;
+
+  constructor(realm: Realm, value: boolean) {
+    super(realm);
+    this.value = value;
+  }
+}
+
+export class NullValue extends Value {}
+
+export class NumberValue extends Value {
+  value: number;
+
+  constructor(realm: Realm, value: number) {
+    super(realm);
+    this.value = value;
+  }
+}
+
+export class ProxyValue extends ObjectValue {
+  __ProxyHandler: any; // TODO?
+  __ProxyTarget: any; // TODO?
+}
+
+export class StringValue extends Value {
+  value: string;
+
+  constructor(realm: Realm, value: string) {
+    super(realm);
+    this.value = value;
+  }
+}
+
+export class SymbolValue extends Value {
+  constructor(realm: Realm) {
+    super(realm);
+  }
+}
+
+export class UndefinedValue extends Value {}
+
+export class FunctionValue extends ObjectValue {
+  __BoundTargetFunction: any; // TODO
+
+  __Call(thisValue: Value, argumentsList: Value[] = []) {
+    // TODO
+    return new UndefinedValue(this.__Realm);
+  }
+
+  __Construct(a: any, b: any) {
+    // TODO
+    return new UndefinedValue(this.__Realm);
+  }
+}
+
+export class BoundFunctionExotic extends FunctionValue {
+  __BoundTargetFunction: any; // TODO?
+}
+
+// ECMA-262 6.2.5
+export class PropertyDescriptor {
+  __Enumerable?: BooleanValue;
+  __Configurable?: BooleanValue;
+
+  // set for data property descriptors
+  __Value?: Value;
+  __Writable?: BooleanValue;
+
+  // set for accessor property descriptors
+  __Get?: any;
+  __Set?: any;
+}
+
+export class Realm {
+  __GlobalObject;
+  __GlobalEnv;
+  __TemplateMap;
+  __Intrinsics;
+}
+
+// ECMA-262 8.4
+export class PendingJob {
+  __Job: Function;
+  __Arguments: Value[];
+  __Realm: Realm;
+  __ScriptOrModule: ScriptRecord;
+}
+
+// ECMA-262 8.1.1
+export abstract class EnvironmentRecord {
+  __Realm: Realm;
+
+  constructor(realm: Realm) {
+    this.__Realm = realm;
+  }
+
+  abstract HasBinding(name: StringValue): boolean;
+
+  abstract CreateMutableBinding(name: StringValue, deletable: boolean);
+
+  abstract CreateImmutableBinding(name: StringValue, strict: boolean);
+
+  abstract InitializeBinding(name: StringValue, value: Value);
+
+  abstract SetMutableBinding(name: StringValue, value: Value, strict: boolean);
+
+  abstract GetBindingValue(name: StringValue, strict: boolean);
+
+  abstract DeleteBinding(name: StringValue);
+
+  abstract HasThisBinding(): boolean;
+
+  abstract HasSuperBinding(): boolean;
+
+  abstract WithBaseObject(): Value | undefined;
+}
+
+// ECMA-262 8.1.1.1
+export class DeclarativeEnvironmentRecord extends EnvironmentRecord {
+  bindings: { [name: string]: Binding };
+
+  constructor(realm: Realm) {
+    super(realm);
+    this.bindings = Object.create(null);
+  }
+
+  // ECMA-262 8.1.1.1.1
+  HasBinding(name: StringValue) {
+    const envRec = this;
+    if (envRec[name.value]) return true;
+    return false;
+  }
+
+  // ECMA-262 8.1.1.1.2
+  CreateMutableBinding(name: StringValue, deletable: boolean) {
+    const envRec = this;
+
+    assert(!envRec[name.value], `Environment record already has a binding for '${name.value}'`);
+
+    envRec[name.value] = new Binding({
+      name: name.value,
+      mutable: true,
+      initialized: false,
+      deletable,
+      strict: false
+    });
+
+    // return NormalCompletion(empty)
+  }
+
+  // ECMA-262 8.1.1.1.3
+  CreateImmutableBinding(name: StringValue, strict: boolean) {
+    const envRec = this;
+
+    assert(!envRec[name.value], `Environment record already has a binding for '${name.value}'`);
+
+    envRec[name.value] = new Binding({
+      name: name.value,
+      mutable: false,
+      initialized: false,
+      deletable: false,
+      strict
+    });
+
+    // return NormalCompletion(empty)
+  }
+
+  // ECMA-262 8.1.1.1.4
+  InitializeBinding(name: StringValue, value: Value) {
+    const envRec = this;
+
+    assert(envRec[name.value], `Environment record does not have a binding for '${name.value}'`);
+    assert(!envRec[name.value].initialized, `Binding for '${name.value}' is already initialized`);
+
+    envRec[name.value].initialize(value);
+
+    // return NormalCompletion(empty)
+  }
+
+  // ECMA-262 8.1.1.1.5
+  SetMutableBinding(name: StringValue, value: Value, strict: boolean) {
+    const envRec = this;
+    const binding = envRec[name.value];
+
+    if (!binding) {
+      if (strict) {
+        throw new ReferenceError(`Cannot set value of uninitialized: '${name.value}'`);
+      }
+
+      envRec.CreateMutableBinding(name, true);
+      envRec.InitializeBinding(name, value);
+      // return NormalCompletion(empty)
+    }
+
+    if (binding.strict) {
+      strict = true;
+    }
+
+    if (!binding.initialized) {
+      throw new ReferenceError(`Cannot set value of uninitialized: '${name.value}'`);
+    } else if (binding.mutable) {
+      binding.value = value;
+    } else {
+      assert(binding.mutable === false, 'Should be changing value of an immutable binding');
+      if (strict) throw new TypeError(`Cannot change value of immutable binding: ${name.value}`);
+    }
+
+    // return NormalCompletion(empty)
+  }
+
+  // ECMA-262 8.1.1.1.6
+  GetBindingValue(name: StringValue, strict: boolean) {
+    const envRec = this;
+
+    assert(envRec[name.value], `Environment record does not have a binding for '${name.value}'`);
+
+    if (!envRec[name.value].initialized) {
+      throw new ReferenceError(`Cannot get value of uninitialized: '${name.value}'`);
+    }
+
+    return envRec[name.value].value;
+  }
+
+  // ECMA-262 8.1.1.1.7
+  DeleteBinding(name: StringValue) {
+    const envRec = this;
+
+    assert(envRec[name.value], `Environment record does not have a binding for '${name.value}'`);
+
+    if (!envRec[name.value].deletable) return false;
+
+    delete envRec[name.value];
+    return true;
+  }
+
+  // ECMA-262 8.1.1.1.8
+  HasThisBinding() {
+    return false;
+  }
+
+  // ECMA-262 8.1.1.1.9
+  HasSuperBinding() {
+    return false;
+  }
+
+  // ECMA-262 8.1.1.1.10
+  WithBaseObject() {
+    return undefined;
+  }
+}
+
+// ECMA-262 8.1.1.2
+export class ObjectEnvironmentRecord extends EnvironmentRecord {
+  object: ObjectValue;
+  withEnvironment: boolean;
+
+  constructor(realm: Realm) {
+    super(realm);
+    this.withEnvironment = false;
+  }
+
+  // ECMA-262 8.1.1.2.1
+  HasBinding(name: StringValue): boolean {
+    const envRec = this;
+    const bindings = this.object;
+    const foundBinding = HasProperty(bindings, name);
+
+    if (!foundBinding) return false;
+    if (!envRec.withEnvironment) return true;
+
+    const unscopables = Get(bindings, envRec.__Realm.__Intrinsics.__Symbol_unscopables);
+    if (unscopables instanceof ObjectValue) {
+      const blocked = ToBoolean(envRec.__Realm, Get(unscopables, name));
+      if (blocked.value === true) return false;
+    }
+
+    return true;
+  }
+
+  // ECMA-262 8.1.1.2.2
+  CreateMutableBinding(name: StringValue, deletable: boolean) {
+    const envRec = this;
+    const bindings = this.object;
+
+    const desc = new PropertyDescriptor();
+    desc.__Value = new UndefinedValue(envRec.__Realm);
+    desc.__Writable = new BooleanValue(envRec.__Realm, true);
+    desc.__Enumerable = new BooleanValue(envRec.__Realm, true);
+    desc.__Configurable = new BooleanValue(envRec.__Realm, deletable);
+
+    return DefinePropertyOrThrow(envRec.__Realm, bindings, name, desc);
+  }
+
+  // ECMA-262 8.1.1.2.3
+  CreateImmutableBinding(name: StringValue, strict: boolean) {
+    assert(false, 'should not be called for object environment records');
+  }
+
+  // ECMA-262 8.1.1.2.4
+  InitializeBinding(name: StringValue, value: Value) {
+    const envRec = this;
+
+    return envRec.SetMutableBinding(name, value, false);
+  }
+
+  // ECMA-262 8.1.1.2.5
+  SetMutableBinding(name: StringValue, value: Value, strict: boolean) {
+    const envRec = this;
+    const bindings = envRec.object;
+    return Set(envRec.__Realm, bindings, name, value, new BooleanValue(envRec.__Realm, strict));
+  }
+
+  // ECMA-262 8.1.1.2.6
+  GetBindingValue(name: StringValue, strict: boolean) {
+    const envRec = this;
+    const bindings = envRec.object;
+
+    const value = HasProperty(bindings, name);
+    if (!value) {
+      if (!strict) return false;
+
+      throw new ReferenceError('Could not get binding value');
+    }
+
+    return Get(bindings, name);
+  }
+
+  // ECMA-262 8.1.1.2.7
+  DeleteBinding(name: StringValue) {
+    const envRec = this;
+    const bindings = envRec.object;
+    return bindings.__Delete(name);
+  }
+
+  // ECMA-262 8.1.1.2.8
+  HasThisBinding(): boolean {
+    return false;
+  }
+
+  // ECMA-262 8.1.1.2.9
+  HasSuperBinding(): boolean {
+    return false;
+  }
+
+  // ECMA-262 8.1.1.2.10
+  WithBaseObject(): Value | undefined {
+    const envRec = this;
+
+    if (envRec.withEnvironment) return envRec.object;
+
+    return new UndefinedValue(envRec.__Realm);
+  }
+}
+
+// ECMA-262 8.1.1.3
+export class FunctionEnvironmentRecord extends DeclarativeEnvironmentRecord {
+  __ThisValue: Value;
+  __ThisBindingStatus: 'lexical' | 'initialized' | 'uninitialized';
+  __FunctionObject: FunctionValue;
+  __HomeObject?: ObjectValue;
+  __NewTarget?: ObjectValue;
+
+  constructor(realm: Realm) {
+    super(realm);
+  }
+
+  // ECMA-262 8.1.1.3.1
+  BindThisValue(value: Value) {
+    const envRec = this;
+    assert(envRec.__ThisBindingStatus !== 'lexical', 'should not be arrow function');
+
+    if (envRec.__ThisBindingStatus === 'initialized') {
+      throw new ReferenceError('this is already bound');
+    }
+
+    envRec.__ThisValue = value;
+    envRec.__ThisBindingStatus = 'initialized';
+
+    return value;
+  }
+
+  // ECMA-262 8.1.1.3.2
+  HasThisBinding() {
+    const envRec = this;
+    return envRec.__ThisBindingStatus !== 'lexical';
+  }
+
+  // ECMA-262 8.1.1.3.3
+  HasSuperBinding() {
+    const envRec = this;
+    if (envRec.__ThisBindingStatus === 'lexical') return false;
+    return envRec.__HomeObject !== undefined;
+  }
+
+  // ECMA-262 8.1.1.3.4
+  GetThisBinding() {
+    const envRec = this;
+    assert(envRec.__ThisBindingStatus !== 'lexical', 'should not be arrow function');
+
+    if (envRec.__ThisBindingStatus === 'uninitialized') {
+      throw new ReferenceError('this is not defined');
+    }
+
+    return envRec.__ThisValue;
+  }
+
+  // ECMA-262 8.1.1.3.5
+  GetSuperBase() {
+    const envRec = this;
+
+    const home = envRec.__HomeObject;
+    if (home === undefined) return undefined;
+
+    assert(home instanceof ObjectValue, 'should be an object if defined');
+    return home.__GetPrototypeOf();
+  }
+}
+
+// ECMA-262 8.1.1.4
+export class GlobalEnvironmentRecord extends EnvironmentRecord {
+  __ObjectRecord: ObjectEnvironmentRecord;
+  __GlobalThisValue: Value;
+  __DeclarativeRecord: DeclarativeEnvironmentRecord;
+  __VarNames: string[];
+
+  // ECMA-262 8.1.1.4.1
+  HasBinding(name: StringValue) {
+    const envRec = this;
+
+    const declRec = envRec.__DeclarativeRecord;
+    if (declRec.HasBinding(name)) return true;
+
+    const objRec = envRec.__ObjectRecord;
+    return objRec.HasBinding(name);
+  }
+
+  // ECMA-262 8.1.1.4.2
+  CreateMutableBinding(name: StringValue, deletable: boolean) {
+    const envRec = this;
+
+    const declRec = envRec.__DeclarativeRecord;
+    if (declRec.HasBinding(name)) {
+      throw new TypeError(`Already defined: '${name.value}'`);
+    }
+
+    return declRec.CreateMutableBinding(name, deletable);
+  }
+
+  // ECMA-262 8.1.1.4.3
+  CreateImmutableBinding(name: StringValue, strict: boolean) {
+    const envRec = this;
+
+    const declRec = envRec.__DeclarativeRecord;
+    if (declRec.HasBinding(name)) {
+      throw new TypeError(`Already defined: '${name.value}'`);
+    }
+
+    return declRec.CreateImmutableBinding(name, strict);
+  }
+
+  // ECMA-262 8.1.1.4.4
+  InitializeBinding(name: StringValue, value: Value) {
+    const envRec = this;
+
+    const declRec = envRec.__DeclarativeRecord;
+    if (declRec.HasBinding(name)) {
+      return declRec.InitializeBinding(name, value);
+    }
+
+    const objRec = envRec.__ObjectRecord;
+    return objRec.InitializeBinding(name, value);
+  }
+
+  // ECMA-262 8.1.1.4.5
+  SetMutableBinding(name: StringValue, value: Value, strict: boolean) {
+    const envRec = this;
+
+    const declRec = envRec.__DeclarativeRecord;
+    if (declRec.HasBinding(name)) {
+      return declRec.SetMutableBinding(name, value, strict);
+    }
+
+    const objRec = envRec.__ObjectRecord;
+    return objRec.SetMutableBinding(name, value, strict);
+  }
+
+  // ECMA-262 8.1.1.4.6
+  GetBindingValue(name: StringValue, strict: boolean) {
+    const envRec = this;
+
+    const declRec = envRec.__DeclarativeRecord;
+    if (declRec.HasBinding(name)) {
+      return declRec.GetBindingValue(name, strict);
+    }
+
+    const objRec = envRec.__ObjectRecord;
+    return objRec.GetBindingValue(name, strict);
+  }
+
+  // ECMA-262 8.1.1.4.7
+  DeleteBinding(name: StringValue) {
+    const envRec = this;
+
+    const declRec = envRec.__DeclarativeRecord;
+    if (declRec.HasBinding(name)) {
+      return declRec.DeleteBinding(name);
+    }
+
+    const objRec = envRec.__ObjectRecord;
+    const globalObject = objRec.object;
+    const existingProp = HasOwnProperty(globalObject, name);
+
+    if (existingProp) {
+      const status = objRec.DeleteBinding(name);
+
+      if (status) {
+        const varNames = envRec.__VarNames;
+        const nameIndex = varNames.indexOf(name.value);
+        if (nameIndex > -1) {
+          varNames.splice(nameIndex, 1);
+        }
+      }
+
+      return status;
+    }
+
+    return true;
+  }
+
+  // ECMA-262 8.1.1.4.8
+  HasThisBinding() {
+    return true;
+  }
+
+  // ECMA-262 8.1.1.4.9
+  HasSuperBinding() {
+    return false;
+  }
+
+  // ECMA-262 8.1.1.4.10
+  WithBaseObject() {
+    return undefined;
+  }
+
+  // ECMA-262 8.1.1.4.11
+  GetThisBinding() {
+    const envRec = this;
+    return envRec.__GlobalThisValue;
+  }
+
+  // ECMA-262 8.1.1.4.12
+  HasVarDeclaration(name: StringValue) {
+    const envRec = this;
+    const varDeclaredNames = envRec.__VarNames;
+    return varDeclaredNames.indexOf(name.value) > -1;
+  }
+
+  // ECMA-262 8.1.1.4.13
+  HasLexicalDeclaration(name: StringValue) {
+    const envRec = this;
+    const declRec = envRec.__DeclarativeRecord;
+    return declRec.HasBinding(name);
+  }
+
+  // ECMA-262 8.1.1.4.14
+  HasRestrictedGlobalProperty(name: StringValue) {
+    const envRec = this;
+    const objRec = envRec.__ObjectRecord;
+    const globalObject = objRec.object;
+
+    const existingProp = globalObject.__GetOwnProperty(name);
+    if (!existingProp) return false;
+    if (existingProp.__Configurable && existingProp.__Configurable.value === true) return false;
+
+    return true;
+  }
+
+  // ECMA-262 8.1.1.4.15
+  CanDeclareGlobalVar(name: StringValue) {
+    const envRec = this;
+    const objRec = envRec.__ObjectRecord;
+    const globalObject = objRec.object;
+
+    const hasProperty = HasOwnProperty(globalObject, name);
+    if (hasProperty) return true;
+
+    return IsExtensible(globalObject);
+  }
+
+  // ECMA-262 8.1.1.4.16
+  CanDeclareGlobalFunction(name: StringValue) {
+    const envRec = this;
+    const objRec = envRec.__ObjectRecord;
+    const globalObject = objRec.object;
+
+    const existingProp = globalObject.__GetOwnProperty(name);
+    if (!existingProp) return IsExtensible(globalObject);
+    if (existingProp.__Configurable && existingProp.__Configurable.value === true) return true;
+    if (
+      IsDataDescriptor(existingProp) &&
+      existingProp.__Writable &&
+      existingProp.__Writable.value === true &&
+      existingProp.__Enumerable &&
+      existingProp.__Enumerable.value === true
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // ECMA-262 8.1.1.4.17
+  CreateGlobalVarBinding(name: StringValue, deletable: boolean) {
+    const envRec = this;
+    const objRec = envRec.__ObjectRecord;
+    const globalObject = objRec.object;
+
+    const hasProperty = HasOwnProperty(globalObject, name);
+    const extensible = IsExtensible(globalObject);
+    if (!hasProperty && extensible) {
+      objRec.CreateMutableBinding(name, deletable);
+      objRec.InitializeBinding(name, new UndefinedValue(envRec.__Realm));
+    }
+
+    const varDeclaredNames = envRec.__VarNames;
+    if (varDeclaredNames.indexOf(name.value) === -1) {
+      varDeclaredNames.push(name.value);
+    }
+  }
+
+  // ECMA-262 8.1.1.4.18
+  CreateGlobalFunctionBinding(name: StringValue, value: Value, deletable: boolean) {
+    const envRec = this;
+    const objRec = envRec.__ObjectRecord;
+    const globalObject = objRec.object;
+
+    const existingProp = globalObject.__GetOwnProperty(name);
+    const desc = new PropertyDescriptor();
+
+    if (
+      !existingProp ||
+      (existingProp.__Configurable && existingProp.__Configurable.value === true)
+    ) {
+      desc.__Value = value;
+      desc.__Writable = new BooleanValue(envRec.__Realm, true);
+      desc.__Enumerable = new BooleanValue(envRec.__Realm, true);
+      desc.__Configurable = new BooleanValue(envRec.__Realm, deletable);
+    } else {
+      desc.__Value = value;
+    }
+
+    DefinePropertyOrThrow(envRec.__Realm, globalObject, name, desc);
+
+    Set(envRec.__Realm, globalObject, name, value, new BooleanValue(envRec.__Realm, false));
+
+    const varDeclaredNames = envRec.__VarNames;
+    if (varDeclaredNames.indexOf(name.value) === -1) {
+      varDeclaredNames.push(name.value);
+    }
+  }
+}
+
+export class LexicalEnvironment {
+  __Realm: Realm;
+  environmentRecord: EnvironmentRecord;
+  parent: LexicalEnvironment | null;
+
+  constructor(realm: Realm) {
+    this.__Realm = realm;
+    this.parent = null;
+  }
+}
+
+// ECMA-262 15.1.8
+export class ScriptRecord {
+  __Realm?: Realm;
+  __Environment?: LexicalEnvironment;
+  __ECMAScriptCode: Nodes.File;
+  __Source: string;
+
+  constructor(realm: Realm, ast: Nodes.File, source: string) {
+    this.__Realm = realm;
+    this.__ECMAScriptCode = ast;
+    this.__Environment = undefined;
+    this.__Source = source;
+  }
+}
+
+// ECMA-262 8.3
+export class ExecutionContext {
+  function: any = null;
+  realm: Realm = null;
+  scriptOrModule: ScriptRecord = null;
+  lexicalEnvironment: LexicalEnvironment;
+  variableEnvironment: LexicalEnvironment;
+
+  constructor() {}
+}
+
+// ECMA-262 8.3
+export class GeneratorExecutionContext extends ExecutionContext {
+  // TODO ?
+}
 
 // ECMA-262 6.2.5.1
 export function IsAccessorDescriptor(desc: PropertyDescriptor) {
@@ -1542,6 +2397,15 @@ export function ObjectCreate(
 
 // ECMA-262 9.3.3
 export function CreateBuiltinFunction(realm: Realm, steps, internalSlotsList, prototype) {}
+
+// ECMA-262 9.4.2
+export class ArrayExotic extends ObjectValue {
+  // ECMA-262 9.4.2.1
+  __DefineOwnProperty(propertyKey: PropertyKeyValue, desc: PropertyDescriptor) {
+    // TODO: override
+    return false;
+  }
+}
 
 // ECMA-262 9.4.2.2
 export function ArrayCreate(realm: Realm, length: NumberValue, proto?: ObjectValue) {

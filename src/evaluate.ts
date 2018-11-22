@@ -1,10 +1,12 @@
 import * as Nodes from '@babel/types';
-import { Realm } from './environment/Realm';
-import { LexicalEnvironment } from './environment/LexicalEnvironment';
-import { BooleanValue } from './values/BooleanValue';
-import { NullValue } from './values/NullValue';
-import { NumberValue } from './values/NumberValue';
-import { StringValue } from './values/StringValue';
+import {
+  Realm,
+  LexicalEnvironment,
+  BooleanValue,
+  NullValue,
+  NumberValue,
+  StringValue
+} from './operations';
 
 // ECMA-262 12.2.4.1
 function evaluateBooleanLiteral(realm: Realm, node: Nodes.BooleanLiteral, env: LexicalEnvironment) {
