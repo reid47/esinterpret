@@ -120,7 +120,7 @@ export function ToPropertyDescriptor(realm: Realm, obj: ObjectValue) {
   // TODO: more here
 }
 
-// ECMA262 7.1.1
+// ECMA-262 7.1.1
 export function ToPrimitive(realm: Realm, input: Value, hint: TypeHint = 'default') {
   assert(input instanceof Value, 'Should be a valid value');
 
@@ -141,7 +141,7 @@ export function ToPrimitive(realm: Realm, input: Value, hint: TypeHint = 'defaul
   return input;
 }
 
-// ECMA262 7.1.1.1
+// ECMA-262 7.1.1.1
 export function OrdinaryToPrimitive(realm: Realm, obj: ObjectValue, hint: TypeHint = 'default') {
   assert(obj instanceof ObjectValue, 'Should be an object');
 
@@ -161,7 +161,7 @@ export function OrdinaryToPrimitive(realm: Realm, obj: ObjectValue, hint: TypeHi
   throw new TypeError('Could not convert to primitive');
 }
 
-// ECMA262 7.1.2
+// ECMA-262 7.1.2
 export function ToBoolean(realm: Realm, argument: Value) {
   if (argument instanceof UndefinedValue || argument instanceof NullValue) {
     return new BooleanValue(realm, false);
@@ -189,7 +189,7 @@ export function ToBoolean(realm: Realm, argument: Value) {
   return new BooleanValue(realm, true);
 }
 
-// ECMA262 7.1.3
+// ECMA-262 7.1.3
 export function ToNumber(realm: Realm, argument: Value): NumberValue {
   if (argument instanceof UndefinedValue) {
     return new NumberValue(realm, NaN);
@@ -335,7 +335,7 @@ export function ToUint8Clamp(realm: Realm, argument: Value) {
   return f;
 }
 
-// ECMA262 7.1.12
+// ECMA-262 7.1.12
 export function ToString(realm: Realm, argument: Value): StringValue {
   if (argument instanceof UndefinedValue) {
     return new StringValue(realm, 'undefined');
@@ -376,7 +376,7 @@ export function NumberToString(realm: Realm, number: NumberValue): StringValue {
   return new StringValue(realm, '' + number.value);
 }
 
-// ECMA262 7.1.13
+// ECMA-262 7.1.13
 export function ToObject(realm: Realm, argument: Value): ObjectValue {
   if (argument instanceof UndefinedValue) {
     throw new TypeError('Cannot convert undefined to object');

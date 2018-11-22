@@ -32,7 +32,7 @@ export class Interpreter {
     return new ScriptRecord(realm, body, source);
   }
 
-  // ECMA 15.1.12
+  // ECMA-262 15.1.12
   evaluateScript(source: string) {
     // TODO: handle parse errors per spec
     const scriptRecord = this.parseScript(source, this.realm);

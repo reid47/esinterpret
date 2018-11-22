@@ -10,6 +10,7 @@ import { PropertyDescriptor } from './PropertyDescriptor';
 import { NumberValue } from './NumberValue';
 import * as Ops from '../operations';
 
+// ECMA-262 9.1
 export class ObjectValue extends Value {
   __Prototype: ObjectValue | NullValue;
   __Extensible: BooleanValue;
