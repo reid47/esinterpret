@@ -13,6 +13,18 @@ function evaluateBooleanLiteral(realm: Realm, node: Nodes.BooleanLiteral, env: L
   return new BooleanValue(realm, node.value);
 }
 
+function evaluateBinaryExpression(
+  realm: Realm,
+  node: Nodes.BinaryExpression,
+  env: LexicalEnvironment
+) {
+  if (node.operator === '+') {
+    // ECMA-262 12.8.3.1
+  }
+
+  throw new Error('Binary operator not implemented: ' + node.operator);
+}
+
 // ECMA-262 13.5.1
 function evaluateExpressionStatement(
   realm: Realm,
@@ -52,6 +64,8 @@ function evaluateStringLiteral(realm: Realm, node: Nodes.StringLiteral, env: Lex
 
 export function evaluate(realm: Realm, node: Nodes.Node, env: LexicalEnvironment) {
   switch (node.type) {
+    case 'BinaryExpression':
+      return evaluateBinaryExpression(realm, node, env);
     case 'BooleanLiteral':
       return evaluateBooleanLiteral(realm, node, env);
     case 'ExpressionStatement':

@@ -20,10 +20,10 @@ export class Interpreter {
   promiseJobQueue: PendingJob[];
 
   constructor() {
-    this.realm = this.initializeRealm();
     this.executionContextStack = [];
     this.scriptJobQueue = [];
     this.promiseJobQueue = [];
+    this.realm = this.initializeRealm();
   }
 
   get runningExecutionContext() {
