@@ -12,6 +12,10 @@ export abstract class Value {
   getType() {
     return this.constructor;
   }
+
+  toPlainValue() {
+    throw new Error('Not implemented.');
+  }
 }
 
 // ECMA-262 9.1
@@ -134,6 +138,20 @@ export class ObjectValue extends Value {
 
     assert(false, 'Could not delete property binding');
   }
+
+  toPlainValue() {
+    const obj = {};
+
+    for (const [key, value] of this.properties) {
+      obj[key.value] = value;
+    }
+
+    for (const [key, value] of this.symbols) {
+      obj[key.value] = value;
+    }
+
+    return obj;
+  }
 }
 
 export class Binding {
@@ -177,9 +195,17 @@ export class BooleanValue extends Value {
     super(realm);
     this.value = value;
   }
+
+  toPlainValue() {
+    return this.value;
+  }
 }
 
-export class NullValue extends Value {}
+export class NullValue extends Value {
+  toPlainValue() {
+    return null;
+  }
+}
 
 export class NumberValue extends Value {
   value: number;
@@ -202,15 +228,30 @@ export class StringValue extends Value {
     super(realm);
     this.value = value;
   }
-}
 
-export class SymbolValue extends Value {
-  constructor(realm: Realm) {
-    super(realm);
+  toPlainValue() {
+    return this.value;
   }
 }
 
-export class UndefinedValue extends Value {}
+export class SymbolValue extends Value {
+  value: symbol;
+
+  constructor(realm: Realm, value: symbol) {
+    super(realm);
+    this.value = value;
+  }
+
+  toPlainValue() {
+    return this.value;
+  }
+}
+
+export class UndefinedValue extends Value {
+  toPlainValue() {
+    return undefined;
+  }
+}
 
 export class FunctionValue extends ObjectValue {
   __BoundTargetFunction: any; // TODO

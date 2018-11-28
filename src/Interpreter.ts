@@ -9,7 +9,8 @@ import {
   ScriptRecord,
   GlobalDeclarationInstantiation,
   ObjectCreate,
-  NewGlobalEnvironment
+  NewGlobalEnvironment,
+  Value
 } from './operations';
 import { evaluate } from './evaluate';
 
@@ -38,7 +39,7 @@ export class Interpreter {
   }
 
   // ECMA-262 15.1.12
-  evaluateScript(source: string) {
+  evaluateScript(source: string): Value {
     // TODO: handle parse errors per spec
     const scriptRecord = this.parseScript(source, this.realm);
 

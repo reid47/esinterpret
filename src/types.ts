@@ -1,6 +1,4 @@
-import { StringValue } from './values/StringValue';
-import { SymbolValue } from './values/SymbolValue';
-import { ObjectValue } from './values/ObjectValue';
+import { StringValue, SymbolValue } from './operations';
 
 export type PropertyKeyValue = StringValue | SymbolValue;
 

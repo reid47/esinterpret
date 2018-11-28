@@ -6,5 +6,5 @@ test('works', () => {
   const result = int.evaluateScript('47');
 
   expect(result).toBeInstanceOf(NumberValue);
-  expect(result.value).toBe(47);
+  expect(result.toPlainValue()).toBe(47);
 });
