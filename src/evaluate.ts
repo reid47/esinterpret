@@ -1,16 +1,19 @@
 import * as Nodes from '@babel/types';
+import { Realm, LexicalEnvironment, JsValue } from './types';
 import {
-  Realm,
-  LexicalEnvironment,
-  BooleanValue,
-  NullValue,
-  NumberValue,
-  StringValue
-} from './operations';
+  createNullValue,
+  createBooleanValue,
+  createNumberValue,
+  createStringValue
+} from './values';
 
 // ECMA-262 12.2.4.1
-function evaluateBooleanLiteral(realm: Realm, node: Nodes.BooleanLiteral, env: LexicalEnvironment) {
-  return new BooleanValue(realm, node.value);
+function evaluateBooleanLiteral(
+  realm: Realm,
+  node: Nodes.BooleanLiteral,
+  env: LexicalEnvironment
+) {
+  return createBooleanValue(realm, node.value);
 }
 
 function evaluateBinaryExpression(
@@ -38,16 +41,28 @@ function evaluateFile(realm: Realm, node: Nodes.File, env: LexicalEnvironment) {
   return evaluate(realm, node.program, env);
 }
 
-function evaluateNullLiteral(realm: Realm, node: Nodes.NullLiteral, env: LexicalEnvironment) {
-  return new NullValue(realm);
+function evaluateNullLiteral(
+  realm: Realm,
+  node: Nodes.NullLiteral,
+  env: LexicalEnvironment
+) {
+  return createNullValue(realm);
 }
 
 // ECMA-262 12.2.4.1
-function evaluateNumberLiteral(realm: Realm, node: Nodes.NumberLiteral, env: LexicalEnvironment) {
-  return new NumberValue(realm, node.value);
+function evaluateNumberLiteral(
+  realm: Realm,
+  node: Nodes.NumberLiteral,
+  env: LexicalEnvironment
+) {
+  return createNumberValue(realm, node.value);
 }
 
-function evaluateProgram(realm: Realm, node: Nodes.Program, env: LexicalEnvironment) {
+function evaluateProgram(
+  realm: Realm,
+  node: Nodes.Program,
+  env: LexicalEnvironment
+) {
   let last;
 
   node.body.forEach(bodyNode => {
@@ -58,14 +73,22 @@ function evaluateProgram(realm: Realm, node: Nodes.Program, env: LexicalEnvironm
 }
 
 // ECMA-262 12.2.4.1
-function evaluateStringLiteral(realm: Realm, node: Nodes.StringLiteral, env: LexicalEnvironment) {
-  return new StringValue(realm, node.value);
+function evaluateStringLiteral(
+  realm: Realm,
+  node: Nodes.StringLiteral,
+  env: LexicalEnvironment
+) {
+  return createStringValue(realm, node.value);
 }
 
-export function evaluate(realm: Realm, node: Nodes.Node, env: LexicalEnvironment) {
+export function evaluate(
+  realm: Realm,
+  node: Nodes.Node,
+  env: LexicalEnvironment
+): JsValue {
   switch (node.type) {
-    case 'BinaryExpression':
-      return evaluateBinaryExpression(realm, node, env);
+    // case 'BinaryExpression':
+    // return evaluateBinaryExpression(realm, node, env);
     case 'BooleanLiteral':
       return evaluateBooleanLiteral(realm, node, env);
     case 'ExpressionStatement':

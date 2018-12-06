@@ -1,18 +1,16 @@
 import { parse } from '@babel/parser';
 import { assert } from './assert';
+import * as ops from './operations';
+import { evaluate } from './evaluate';
 import {
   Realm,
-  CreateRealm,
-  ExecutionContext,
-  ObjectValue,
+  ValueType,
   PendingJob,
+  ExecutionContext,
   ScriptRecord,
-  GlobalDeclarationInstantiation,
-  ObjectCreate,
-  NewGlobalEnvironment,
-  Value
-} from './operations';
-import { evaluate } from './evaluate';
+  JsValue
+} from './types';
+import { isObjectValue } from './values';
 
 export class Interpreter {
   realm: Realm;
@@ -34,59 +32,65 @@ export class Interpreter {
   // ECMA-262 15.1.9
   parseScript(source: string, realm: Realm): ScriptRecord {
     // TODO: handle parse errors per spec
-    const body = parse(source);
-    return new ScriptRecord(realm, body, source);
+    const ast = parse(source);
+    return { realm, environment: null, source, ast };
   }
 
   // ECMA-262 15.1.12
-  evaluateScript(source: string): Value {
+  evaluateScript(source: string): JsValue {
     // TODO: handle parse errors per spec
     const scriptRecord = this.parseScript(source, this.realm);
 
-    const globalEnv = scriptRecord.__Realm.__GlobalEnv;
+    const { realm, ast } = scriptRecord;
 
-    const scriptContext = new ExecutionContext();
-    scriptContext.function = null;
-    scriptContext.realm = scriptRecord.__Realm;
-    scriptContext.scriptOrModule = scriptRecord;
-    scriptContext.variableEnvironment = globalEnv;
-    scriptContext.lexicalEnvironment = globalEnv;
+    const scriptContext: ExecutionContext = {
+      function: null,
+      realm,
+      scriptOrModule: scriptRecord,
+      variableEnvironment: realm.globalEnv,
+      lexicalEnvironment: realm.globalEnv
+    };
 
     // TODO: Suspend the currently running execution context?
 
     this.executionContextStack.push(scriptContext);
 
-    const scriptBody = scriptRecord.__ECMAScriptCode;
+    // GlobalDeclarationInstantiation(scriptBody, globalEnv);
 
-    GlobalDeclarationInstantiation(scriptBody, globalEnv);
-
-    const result = evaluate(this.realm, scriptBody, globalEnv);
+    const result = evaluate(this.realm, ast, realm.globalEnv);
 
     this.executionContextStack.pop();
 
-    assert(this.executionContextStack.length > 0, 'execution context stack should not be empty');
+    assert(
+      this.executionContextStack.length > 0,
+      'execution context stack should not be empty'
+    );
 
     return result;
   }
 
   // ECMA-262 8.5
   initializeRealm() {
-    const realm = CreateRealm();
+    const realm = ops.createRealm();
 
-    const newContext = new ExecutionContext();
-    newContext.function = null;
-    newContext.realm = realm;
-    newContext.scriptOrModule = null;
+    const newContext: ExecutionContext = {
+      function: null,
+      realm,
+      scriptOrModule: null,
+      lexicalEnvironment: null,
+      variableEnvironment: null
+    };
 
     this.executionContextStack.push(newContext);
 
-    const globalObj = ObjectCreate(realm, realm.__Intrinsics.__ObjectPrototype);
+    const globalObj = ops.objectCreate(realm, realm.intrinsics.objectPrototype);
     const thisValue = globalObj;
-    assert(globalObj instanceof ObjectValue, 'global should be an object');
+
+    assert(isObjectValue(globalObj), 'global should be an object');
 
     // ECMA-262 8.2.3
-    realm.__GlobalObject = globalObj;
-    realm.__GlobalEnv = NewGlobalEnvironment(realm, globalObj, thisValue);
+    realm.globalObject = globalObj;
+    // realm.globalEnv = NewGlobalEnvironment(realm, globalObj, thisValue);
 
     // ECMA-262 8.2.4
     // TODO: SetDefaultGlobalBindings
