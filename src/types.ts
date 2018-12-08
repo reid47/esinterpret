@@ -1,5 +1,7 @@
 export interface InterpreterOptions {
   strictMode: boolean;
+  maxCallStackDepth: number;
+  maxLoopIterations: number;
 }
 
 export type PropertyKeyValue = StringValue | SymbolValue;

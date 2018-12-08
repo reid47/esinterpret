@@ -1,7 +1,7 @@
 import { parse } from '@babel/parser';
 import { assert } from './assert';
 import * as ops from './operations';
-import { evaluate } from './evaluate';
+import { Evaluation } from './evaluation';
 import {
   Realm,
   PendingJob,
@@ -60,7 +60,7 @@ export class Interpreter {
 
     // GlobalDeclarationInstantiation(scriptBody, globalEnv);
 
-    const result = evaluate(this.realm, ast, realm.globalEnv);
+    const result = new Evaluation().evaluate(this.realm, ast, realm.globalEnv);
 
     this.executionContextStack.pop();
 
