@@ -5,8 +5,16 @@ import {
   BooleanValue,
   NumberValue,
   StringValue,
-  ValueType
+  UndefinedValue
 } from './types';
+
+export function createUndefinedValue(realm: Realm): UndefinedValue {
+  return {
+    realm,
+    type: 'Undefined',
+    value: undefined
+  };
+}
 
 export function createNullValue(realm: Realm): NullValue {
   return {
@@ -57,4 +65,9 @@ export function isValue(obj: any) {
 
 export function isObjectValue(obj: any): obj is ObjectValue {
   return isValue(obj) && obj.type === 'Object';
+}
+
+export function isReference(obj: any) {
+  // TODO
+  return false;
 }

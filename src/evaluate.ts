@@ -1,11 +1,15 @@
 import * as Nodes from '@babel/types';
 import { Realm, LexicalEnvironment, JsValue } from './types';
+import * as ops from './operations';
 import {
   createNullValue,
   createBooleanValue,
   createNumberValue,
-  createStringValue
+  createStringValue,
+  isReference,
+  createUndefinedValue
 } from './values';
+import { assert } from './assert';
 
 // ECMA-262 12.2.4.1
 function evaluateBooleanLiteral(
@@ -16,16 +20,22 @@ function evaluateBooleanLiteral(
   return createBooleanValue(realm, node.value);
 }
 
-function evaluateBinaryExpression(
+// ECMA-262 12.14.3
+function evaluateConditionalExpression(
   realm: Realm,
-  node: Nodes.BinaryExpression,
+  node: Nodes.ConditionalExpression,
   env: LexicalEnvironment
 ) {
-  if (node.operator === '+') {
-    // ECMA-262 12.8.3.1
+  const lRef = evaluate(realm, node.test, env);
+  const lVal = ops.toBoolean(ops.getValue(lRef));
+
+  if (lVal) {
+    const trueRef = evaluate(realm, node.consequent, env);
+    return ops.getValue(trueRef);
   }
 
-  throw new Error('Binary operator not implemented: ' + node.operator);
+  const falseRef = evaluate(realm, node.alternate, env);
+  return ops.getValue(falseRef);
 }
 
 // ECMA-262 13.5.1
@@ -41,6 +51,7 @@ function evaluateFile(realm: Realm, node: Nodes.File, env: LexicalEnvironment) {
   return evaluate(realm, node.program, env);
 }
 
+// ECMA-262 12.2.4.1
 function evaluateNullLiteral(
   realm: Realm,
   node: Nodes.NullLiteral,
@@ -72,6 +83,20 @@ function evaluateProgram(
   return last;
 }
 
+function evaluateSequenceExpression(
+  realm: Realm,
+  node: Nodes.SequenceExpression,
+  env: LexicalEnvironment
+) {
+  let last: JsValue;
+
+  for (const exprNode of node.expressions) {
+    last = ops.getValue(evaluate(realm, exprNode, env));
+  }
+
+  return last;
+}
+
 // ECMA-262 12.2.4.1
 function evaluateStringLiteral(
   realm: Realm,
@@ -81,16 +106,90 @@ function evaluateStringLiteral(
   return createStringValue(realm, node.value);
 }
 
+function evaluateUnaryExpression(
+  realm: Realm,
+  node: Nodes.UnaryExpression,
+  env: LexicalEnvironment
+) {
+  switch (node.operator) {
+    // TODO: delete operator
+
+    case 'void': {
+      ops.getValue(evaluate(realm, node.argument, env));
+      return createUndefinedValue(realm);
+    }
+
+    case 'typeof': {
+      // ECMA-262 12.5.5
+      const expr = evaluate(realm, node.argument, env);
+      if (isReference(expr)) {
+        // TODO
+      }
+
+      const val = ops.getValue(expr);
+
+      switch (val.type) {
+        case 'Undefined':
+          return createStringValue(realm, 'undefined');
+        case 'Null':
+          return createStringValue(realm, 'object');
+        case 'Boolean':
+          return createStringValue(realm, 'boolean');
+        case 'Number':
+          return createStringValue(realm, 'number');
+        case 'String':
+          return createStringValue(realm, 'string');
+        case 'Symbol':
+          return createStringValue(realm, 'symbol');
+        case 'Object': {
+          if ('call' in val) return createStringValue(realm, 'function');
+          return createStringValue(realm, 'object');
+        }
+        default:
+          assert(false, `unexpected type: ${val.type}`);
+      }
+    }
+
+    case '+': {
+      // ECMA-262 12.5.6
+      const expr = evaluate(realm, node.argument, env);
+      return createNumberValue(realm, ops.toNumber(ops.getValue(expr)));
+    }
+
+    case '-': {
+      // ECMA-262 12.5.7
+      const expr = evaluate(realm, node.argument, env);
+      const oldValue = ops.toNumber(ops.getValue(expr));
+      if (isNaN(oldValue)) return createNumberValue(realm, NaN);
+      return createNumberValue(realm, -oldValue);
+    }
+
+    case '~': {
+      // ECMA-262 12.5.8
+      const expr = evaluate(realm, node.argument, env);
+      const oldValue = ops.toNumber(ops.getValue(expr));
+      return createNumberValue(realm, ~oldValue);
+    }
+
+    case '!': {
+      // ECMA-262 12.5.9
+      const expr = evaluate(realm, node.argument, env);
+      const oldValue = ops.toBoolean(ops.getValue(expr));
+      return createBooleanValue(realm, !oldValue);
+    }
+  }
+}
+
 export function evaluate(
   realm: Realm,
   node: Nodes.Node,
   env: LexicalEnvironment
 ): JsValue {
   switch (node.type) {
-    // case 'BinaryExpression':
-    // return evaluateBinaryExpression(realm, node, env);
     case 'BooleanLiteral':
       return evaluateBooleanLiteral(realm, node, env);
+    case 'ConditionalExpression':
+      return evaluateConditionalExpression(realm, node, env);
     case 'ExpressionStatement':
       return evaluateExpressionStatement(realm, node, env);
     case 'File':
@@ -101,8 +200,12 @@ export function evaluate(
       return evaluateNullLiteral(realm, node, env);
     case 'Program':
       return evaluateProgram(realm, node, env);
+    case 'SequenceExpression':
+      return evaluateSequenceExpression(realm, node, env);
     case 'StringLiteral':
       return evaluateStringLiteral(realm, node, env);
+    case 'UnaryExpression':
+      return evaluateUnaryExpression(realm, node, env);
     default:
       throw new Error(`Not yet implemented: ${node.type}`);
   }

@@ -4,21 +4,24 @@ import * as ops from './operations';
 import { evaluate } from './evaluate';
 import {
   Realm,
-  ValueType,
   PendingJob,
   ExecutionContext,
   ScriptRecord,
-  JsValue
+  JsValue,
+  InterpreterOptions
 } from './types';
 import { isObjectValue } from './values';
+import { mergeOptions } from './options';
 
 export class Interpreter {
+  options: InterpreterOptions;
   realm: Realm;
   executionContextStack: ExecutionContext[];
   scriptJobQueue: PendingJob[];
   promiseJobQueue: PendingJob[];
 
-  constructor() {
+  constructor(options?: InterpreterOptions) {
+    this.options = mergeOptions(options);
     this.executionContextStack = [];
     this.scriptJobQueue = [];
     this.promiseJobQueue = [];

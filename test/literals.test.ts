@@ -1,9 +1,13 @@
 import { getResult } from './test-helpers';
 
 test('numeric literals', () => {
-  const result = getResult('47');
+  let result = getResult('47');
   expect(result.type).toBe('Number');
   expect(result.value).toBe(47);
+
+  result = getResult('-47');
+  expect(result.type).toBe('Number');
+  expect(result.value).toBe(-47);
 });
 
 test('string literals', () => {

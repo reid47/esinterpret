@@ -1,16 +1,19 @@
+export interface InterpreterOptions {
+  strictMode: boolean;
+}
+
 export type PropertyKeyValue = StringValue | SymbolValue;
 
 export type TypeHint = 'default' | 'string' | 'number';
 
 export type ValueType =
+  | 'Undefined'
   | 'Null'
   | 'String'
   | 'Symbol'
   | 'Boolean'
   | 'Number'
-  | 'Object'
-  | 'Function'
-  | 'Proxy';
+  | 'Object';
 
 export interface Realm {
   globalObject;
@@ -28,6 +31,11 @@ export interface JsValue {
 export interface NullValue extends JsValue {
   type: 'Null';
   value: null;
+}
+
+export interface UndefinedValue extends JsValue {
+  type: 'Undefined';
+  value: undefined;
 }
 
 export interface BooleanValue extends JsValue {
@@ -56,10 +64,10 @@ export interface ObjectValue extends JsValue {
   extensible: BooleanValue;
   properties: Map<StringValue, any>;
   symbols: Map<SymbolValue, any>;
-}
-
-export interface ProxyValue extends JsValue {
-  type: 'Proxy';
+  booleanData?: boolean;
+  numberData?: number;
+  stringData?: string;
+  symbolData?: symbol;
 }
 
 export interface ExecutionContext {
