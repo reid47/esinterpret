@@ -3,3 +3,5 @@ export class NotImplementedError extends Error {
     super(`Not implemented: ${message}`);
   }
 }
+
+export class SpecAssertionError extends Error {}

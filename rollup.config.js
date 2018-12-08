@@ -4,8 +4,6 @@ import filesize from 'rollup-plugin-filesize';
 import commonjs from 'rollup-plugin-commonjs';
 import nodeResolve from 'rollup-plugin-node-resolve';
 
-const prod = process.env.NODE_ENV === 'production';
-
 export default {
   input: 'src/index.ts',
   output: {
@@ -14,10 +12,10 @@ export default {
     name: 'ESInterpret'
   },
   plugins: [
-    typescript({ target: 'es2015' }),
-    prod && terser(),
+    typescript({ target: 'es5' }),
+    terser(),
     nodeResolve(),
     commonjs(),
     filesize()
-  ].filter(Boolean)
+  ]
 };

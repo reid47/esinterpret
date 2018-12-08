@@ -1,4 +1,4 @@
-class SpecAssertionError extends Error {}
+import { SpecAssertionError } from './errors';
 
 export function assert(condition, message) {
   if (!condition) {

@@ -1,14 +1,7 @@
 import * as Nodes from '@babel/types';
 import { Realm, LexicalEnvironment, JsValue } from './types';
 import * as ops from './operations';
-import {
-  createNullValue,
-  createBooleanValue,
-  createNumberValue,
-  createStringValue,
-  isReference,
-  createUndefinedValue
-} from './values';
+import * as values from './values';
 import { assert } from './assert';
 import { NotImplementedError } from './errors';
 
@@ -29,102 +22,114 @@ export class Evaluation {
     switch (node.operator) {
       case '**': {
         const result = Math.pow(ops.toNumber(lVal), ops.toNumber(rVal));
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '*': {
         const result = ops.toNumber(lVal) * ops.toNumber(rVal);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '/': {
         const result = ops.toNumber(lVal) / ops.toNumber(rVal);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '%': {
         const result = ops.toNumber(lVal) % ops.toNumber(rVal);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '+': {
         const result = ops.toNumber(lVal) + ops.toNumber(rVal);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '-': {
         const result = ops.toNumber(lVal) - ops.toNumber(rVal);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '<<': {
         const result = ops.toInt32(lVal) << (ops.toUint32(rVal) & 0x1f);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '>>': {
         const result = ops.toInt32(lVal) >> (ops.toUint32(rVal) & 0x1f);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '>>>': {
         const result = ops.toUint32(lVal) >>> (ops.toUint32(rVal) & 0x1f);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '<': {
         const result = ops.abstractRelationalComparison(lVal, rVal, true);
-        return createBooleanValue(realm, result === void 0 ? false : result);
+        return values.createBooleanValue(
+          realm,
+          result === void 0 ? false : result
+        );
       }
 
       case '>': {
         const result = ops.abstractRelationalComparison(rVal, lVal, false);
-        return createBooleanValue(realm, result === void 0 ? false : result);
+        return values.createBooleanValue(
+          realm,
+          result === void 0 ? false : result
+        );
       }
 
       case '<=': {
         const result = ops.abstractRelationalComparison(rVal, lVal, false);
-        return createBooleanValue(realm, result === false ? true : false);
+        return values.createBooleanValue(
+          realm,
+          result === false ? true : false
+        );
       }
 
       case '>=': {
         const result = ops.abstractRelationalComparison(lVal, rVal, true);
-        return createBooleanValue(realm, result !== false ? false : true);
+        return values.createBooleanValue(
+          realm,
+          result !== false ? false : true
+        );
       }
 
       case '==': {
         const result = ops.abstractEqualityComparison(rVal, lVal);
-        return createBooleanValue(realm, result);
+        return values.createBooleanValue(realm, result);
       }
 
       case '!=': {
         const result = ops.abstractEqualityComparison(rVal, lVal);
-        return createBooleanValue(realm, !result);
+        return values.createBooleanValue(realm, !result);
       }
 
       case '===': {
         const result = ops.strictEqualityComparison(rVal, lVal);
-        return createBooleanValue(realm, result);
+        return values.createBooleanValue(realm, result);
       }
 
       case '!==': {
         const result = ops.strictEqualityComparison(rVal, lVal);
-        return createBooleanValue(realm, !result);
+        return values.createBooleanValue(realm, !result);
       }
 
       case '&': {
         const result = ops.toInt32(lVal) & ops.toInt32(rVal);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '^': {
         const result = ops.toInt32(lVal) ^ ops.toInt32(rVal);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
 
       case '|': {
         const result = ops.toInt32(lVal) | ops.toInt32(rVal);
-        return createNumberValue(realm, result);
+        return values.createNumberValue(realm, result);
       }
     }
 
@@ -137,7 +142,7 @@ export class Evaluation {
     node: Nodes.BooleanLiteral,
     env: LexicalEnvironment
   ) {
-    return createBooleanValue(realm, node.value);
+    return values.createBooleanValue(realm, node.value);
   }
 
   // ECMA-262 12.14.3
@@ -179,7 +184,8 @@ export class Evaluation {
     switch (node.operator) {
       case '&&': {
         const lVal = ops.getValue(this.evaluate(realm, node.left, env));
-        if (!ops.toBoolean(lVal)) return createBooleanValue(realm, false);
+        if (!ops.toBoolean(lVal))
+          return values.createBooleanValue(realm, false);
         return ops.getValue(this.evaluate(realm, node.right, env));
       }
 
@@ -199,7 +205,7 @@ export class Evaluation {
     node: Nodes.NullLiteral,
     env: LexicalEnvironment
   ) {
-    return createNullValue(realm);
+    return values.createNullValue(realm);
   }
 
   // ECMA-262 12.2.4.1
@@ -208,7 +214,7 @@ export class Evaluation {
     node: Nodes.NumberLiteral,
     env: LexicalEnvironment
   ) {
-    return createNumberValue(realm, node.value);
+    return values.createNumberValue(realm, node.value);
   }
 
   evaluateProgram(realm: Realm, node: Nodes.Program, env: LexicalEnvironment) {
@@ -241,7 +247,7 @@ export class Evaluation {
     node: Nodes.StringLiteral,
     env: LexicalEnvironment
   ) {
-    return createStringValue(realm, node.value);
+    return values.createStringValue(realm, node.value);
   }
 
   evaluateUnaryExpression(
@@ -250,39 +256,38 @@ export class Evaluation {
     env: LexicalEnvironment
   ) {
     switch (node.operator) {
-      // TODO: delete operator
-
       case 'void': {
         ops.getValue(this.evaluate(realm, node.argument, env));
-        return createUndefinedValue(realm);
+        return values.createUndefinedValue(realm);
       }
 
       case 'typeof': {
         // ECMA-262 12.5.5
         const expr = this.evaluate(realm, node.argument, env);
 
-        if (isReference(expr)) {
-          // TODO
+        if (values.isReference(expr)) {
+          throw new NotImplementedError('typeof reference');
         }
 
         const val = ops.getValue(expr);
 
         switch (val.type) {
           case 'Undefined':
-            return createStringValue(realm, 'undefined');
+            return values.createStringValue(realm, 'undefined');
           case 'Null':
-            return createStringValue(realm, 'object');
+            return values.createStringValue(realm, 'object');
           case 'Boolean':
-            return createStringValue(realm, 'boolean');
+            return values.createStringValue(realm, 'boolean');
           case 'Number':
-            return createStringValue(realm, 'number');
+            return values.createStringValue(realm, 'number');
           case 'String':
-            return createStringValue(realm, 'string');
+            return values.createStringValue(realm, 'string');
           case 'Symbol':
-            return createStringValue(realm, 'symbol');
+            return values.createStringValue(realm, 'symbol');
           case 'Object': {
-            if ('call' in val) return createStringValue(realm, 'function');
-            return createStringValue(realm, 'object');
+            if ('call' in val)
+              return values.createStringValue(realm, 'function');
+            return values.createStringValue(realm, 'object');
           }
           default:
             assert(false, `unexpected type: ${val.type}`);
@@ -292,31 +297,36 @@ export class Evaluation {
       case '+': {
         // ECMA-262 12.5.6
         const expr = this.evaluate(realm, node.argument, env);
-        return createNumberValue(realm, ops.toNumber(ops.getValue(expr)));
+        return values.createNumberValue(
+          realm,
+          ops.toNumber(ops.getValue(expr))
+        );
       }
 
       case '-': {
         // ECMA-262 12.5.7
         const expr = this.evaluate(realm, node.argument, env);
         const oldValue = ops.toNumber(ops.getValue(expr));
-        if (isNaN(oldValue)) return createNumberValue(realm, NaN);
-        return createNumberValue(realm, -oldValue);
+        if (isNaN(oldValue)) return values.createNumberValue(realm, NaN);
+        return values.createNumberValue(realm, -oldValue);
       }
 
       case '~': {
         // ECMA-262 12.5.8
         const expr = this.evaluate(realm, node.argument, env);
         const oldValue = ops.toNumber(ops.getValue(expr));
-        return createNumberValue(realm, ~oldValue);
+        return values.createNumberValue(realm, ~oldValue);
       }
 
       case '!': {
         // ECMA-262 12.5.9
         const expr = this.evaluate(realm, node.argument, env);
         const oldValue = ops.toBoolean(ops.getValue(expr));
-        return createBooleanValue(realm, !oldValue);
+        return values.createBooleanValue(realm, !oldValue);
       }
     }
+
+    throw new NotImplementedError(`unary operator: ${node.operator}`);
   }
 
   evaluate(realm: Realm, node: Nodes.Node, env: LexicalEnvironment): JsValue {

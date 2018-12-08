@@ -8,6 +8,7 @@ import {
 } from './types';
 import * as values from './values';
 import { assert } from './assert';
+import { NotImplementedError } from './errors';
 
 // ECMA-262 6.2.4.8
 export function getValue(value: JsValue) {
@@ -41,8 +42,7 @@ export function toBoolean(argument: JsValue): boolean {
 // ECMA-262 7.1.1
 export function toPrimitive(input: JsValue, hint: TypeHint = 'default') {
   if (values.isObjectValue(input)) {
-    // TODO
-    throw new Error('Not yet implemented');
+    throw new NotImplementedError('object to primitive conversion');
   }
 
   return input;
